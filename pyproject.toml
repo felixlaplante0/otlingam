@@ -4,7 +4,7 @@ description = "Exact dynamic programming-based causal discovery"
 readme = "README.md"
 urls = { "Source" = "https://github.com/felixlaplante0/exactdag" }
 authors = [{ name = "Félix Laplante" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["numpy", "numba", "scikit-learn"]
 dynamic = ["version"]
 classifiers = [
