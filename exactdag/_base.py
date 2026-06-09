@@ -2,40 +2,15 @@
 
 from __future__ import annotations
 
-from numbers import Real
 from typing import Self, cast
 
 import numpy as np
-from numba import njit, prange  # type: ignore
+from lingam.utils import predict_adaptive_lasso  # type: ignore
+from numba import njit  # type: ignore
+from scipy.stats import norm  # type: ignore
 from sklearn.base import BaseEstimator  # type: ignore
-from sklearn.utils._param_validation import Interval, validate_params  # type: ignore
+from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
-
-
-@njit(cache=True, inline="always")  # type: ignore
-def pack_mask(mask: int, j: int) -> int:
-    """Removes bit j from mask.
-
-    Args:
-        mask (int): Bitmask encoding a subset of variables.
-        j (int): Index of the target bit.
-    """
-    lower = mask & ((1 << j) - 1)
-    upper = mask >> (j + 1)
-    return lower | (upper << j)
-
-
-@njit(cache=True, inline="always")  # type: ignore
-def unpack_mask(pmask: int, j: int) -> int:
-    """Recovers full mask from pmask.
-
-    Args:
-        pmask (int): Bitmask encoding a subset of variables.
-        j (int): Index of the target bit.
-    """
-    lower = pmask & ((1 << j) - 1)
-    upper = pmask >> j
-    return lower | (upper << (j + 1))
 
 
 @njit(cache=True, inline="always")  # type: ignore
@@ -51,7 +26,7 @@ def _get_A_num(
         d (int): Number of variables.
 
     Returns:
-        tuple[np.ndarray, int]: Packed lower-triangular matrix, and number of parents.
+        tuple[np.ndarray, int]: Packed lower-triangular matrix and number of parents.
     """
     parents = np.empty(d - 1, dtype=np.int32)
     A = np.empty(d * (d + 1) // 2, dtype=np.float64)
@@ -77,113 +52,139 @@ def _get_A_num(
 
 
 @njit(cache=True, inline="always")  # type: ignore
-def _cholesky_solve_norm_inplace(A: np.ndarray, n: int):
-    """Solves via in-place Cholesky decomposition and returns the squared norm.
+def _cholesky_solve_norm_inplace(A: np.ndarray, k: int) -> float:
+    """Computes the residual sum of squares using an in-place Cholesky decomposition.
 
     Args:
-        A (np.ndarray): Packed lower-triangular matrix, modified in-place.
-        n (int): Size of the system.
+        A (np.ndarray): Packed lower-triangular Gram matrix.
+        k (int): Number of regression coefficients.
 
     Returns:
-        float: Squared norm of the solution vector.
+        float: Residual sum of squares.
     """
-    for i in range(n + 1):
+    for i in range(k + 1):
         ii = i * (i + 1) // 2
         for j in range(i):
             ij = ii + j
-            for k in range(j):
-                A[ij] -= A[ii + k] * A[j * (j + 1) // 2 + k]
+            for l in range(j):
+                A[ij] -= A[ii + l] * A[j * (j + 1) // 2 + l]
             A[ij] /= A[j * (j + 1) // 2 + j]
         j = i
         ij = ii + j
-        for k in range(j):
-            A[ij] -= A[ii + k] * A[j * (j + 1) // 2 + k]
+        for l in range(j):  # noqa: E741
+            A[ij] -= A[ii + l] * A[j * (j + 1) // 2 + l]
         A[ij] = np.sqrt(A[ij])
 
-    return A[n * (n + 3) // 2] ** 2
+    return A[k * (k + 3) // 2] ** 2
+
+
+@njit(cache=True, inline="always")  # type: ignore
+def _solve_coef(A: np.ndarray, k: int) -> np.ndarray:
+    """Solves for regression coefficients using the Cholesky factor.
+
+    Args:
+        A (np.ndarray): Packed Cholesky factor and transformed response vector.
+        k (int): Number of regression coefficients.
+
+    Returns:
+        np.ndarray: Regression coefficients.
+    """
+    coef = np.empty(k, dtype=np.float64)
+    kk = k * (k + 1) // 2
+    for i in range(k):
+        coef[i] = A[kk + i]
+
+    for i in range(k - 1, -1, -1):
+        for j in range(i + 1, k):
+            coef[i] -= A[j * (j + 1) // 2 + i] * coef[j]
+        coef[i] /= A[i * (i + 1) // 2 + i]
+    return coef
+
+
+@njit(cache=True, inline="always")  # type: ignore
+def _compute_residuals(
+    X: np.ndarray, target: int, mask: int, coef: np.ndarray, d: int
+) -> np.ndarray:
+    """Computes residuals from regression coefficients.
+
+    Args:
+        X (np.ndarray): Input data.
+        target (int): Index of the response variable.
+        mask (int): Bitmask encoding the predictor variables.
+        coef (np.ndarray): Regression coefficients.
+        d (int): Number of variables.
+
+    Returns:
+        np.ndarray: Regression residuals.
+    """
+    z = X[:, target].copy()
+    idx = 0
+    for i in range(d):
+        if (mask >> i) & 1:
+            z -= coef[idx] * X[:, i]
+            idx += 1
+    return z
 
 
 @njit(cache=True, inline="always")  # type: ignore
 def _score(
-    cov_matrix: np.ndarray, target: int, mask: int, d: int, penalty: float
+    X: np.ndarray, cov_matrix: np.ndarray, q: np.ndarray, target: int, mask: int, d: int
 ) -> float:
-    """Solve least squares for target regressed on the variables in mask.
+    """Calculates the squared W2 distance-based score.
 
     Args:
-        cov_matrix (np.ndarray): cov_matrixariance matrix.
+        X (np.ndarray): Input data.
+        cov_matrix (np.ndarray): Covariance matrix.
+        q (np.ndarray): Precomputed N(0, 1) quantiles.
         target (int): Index of the response variable.
         mask (int): Bitmask encoding the predictor variables.
         d (int): Number of variables.
-        penalty (float): Regularization penalty per parent.
 
     Returns:
-        float: The score for the given target, mask, and penalty.
+        float: Squared W2 distance-based score.
     """
+    n = X.shape[0]
+
     A, k = _get_A_num(cov_matrix, mask, target, d)
-    return _cholesky_solve_norm_inplace(A, k) + penalty * k
+    rss = _cholesky_solve_norm_inplace(A, k)
+    coef = _solve_coef(A, k)
 
+    z = _compute_residuals(X, target, mask, coef, d)
+    z /= np.sqrt(rss / n)
+    z.sort()
 
-@njit(cache=True, parallel=True, fastmath=True)  # type: ignore
-def _parents_dp(
-    cov_matrix: np.ndarray, d: int, penalty: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """Find the best subset as parents set for each node and candidate set.
-
-    Args:
-        cov_matrix (np.ndarray): cov_matrixariance matrix.
-        target (int): Index of the response variable.
-        d (int): Number of variables.
-        penalty (float): Regularization penalty per parent.
-
-    Returns:
-        tuple[np.ndarray, np.ndarray]: Best scores and best parent sets.
-    """
-    n = 1 << (d - 1)
-    best_scores = np.empty((d, n), dtype=np.float32)
-    best_parents_sets = np.empty((d, n), dtype=np.int32)
-
-    for j in prange(d):
-        for pmask in range(n):
-            cur_best_score = _score(cov_matrix, j, unpack_mask(pmask, j), d, penalty)
-            cur_best_set = bits = pmask
-            while bits:
-                lsb = bits & -bits
-                sub_pmask = pmask ^ lsb
-                if best_scores[j, sub_pmask] < cur_best_score:
-                    cur_best_score = best_scores[j, sub_pmask]
-                    cur_best_set = best_parents_sets[j, sub_pmask]
-                bits ^= lsb
-            best_scores[j, pmask] = cur_best_score
-            best_parents_sets[j, pmask] = cur_best_set
-
-    return best_scores, best_parents_sets
+    return np.mean((z - q) ** 2)  # type: ignore
 
 
 @njit(cache=True, fastmath=True)  # type: ignore
-def _sink_dp(best_scores: np.ndarray, d: int) -> tuple[np.ndarray, float]:
-    """Find the optimal sink node for every subset via dynamic programming.
+def _sink_dp(
+    X: np.ndarray, cov_matrix: np.ndarray, q: np.ndarray, d: int
+) -> tuple[np.ndarray, float]:
+    """Finds the optimal sink node for every subset via dynamic programming.
 
     Args:
-        best_score (np.ndarray): Best scores.
+        X (np.ndarray): Input data.
+        cov_matrix (np.ndarray): Covariance matrix.
+        q (np.ndarray): Precomputed N(0, 1) quantiles.
         d (int): Number of variables.
 
     Returns:
-        tuple(np.ndarray, float): Optimal sink index for each subset and inertia.
+        tuple[np.ndarray, float]: Optimal sink index for each subset and total score.
     """
     n = 1 << d
     H = np.zeros(n, dtype=np.float32)
     sinks = np.full(n, -1, dtype=np.int32)
 
     for mask in range(1, n):
-        cur_best_score = np.inf
+        cur_best_score = -np.inf
         cur_best_sink = -1
         bits = mask
         s = 0
         while bits:
             if bits & 1:
                 prev_mask = mask ^ (1 << s)
-                score = H[prev_mask] + best_scores[s, pack_mask(prev_mask, s)]
-                if score < cur_best_score:
+                score = H[prev_mask] + _score(X, cov_matrix, q, s, prev_mask, d)
+                if score > cur_best_score:
                     cur_best_score = score
                     cur_best_sink = s
             bits >>= 1
@@ -215,69 +216,76 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-def _ols_weights(
-    order: np.ndarray, best_parents_sets: np.ndarray, cov_matrix: np.ndarray, d: int
-) -> np.ndarray:
+def _recover_weights(order: np.ndarray, X: np.ndarray, d: int) -> np.ndarray:
     """Recovers regression edge weights given the causal order and parent sets.
 
     Args:
         order (np.ndarray): Causal order.
-        best_parents_sets (np.ndarray): Optimal parents set table.
-        cov_matrix (np.ndarray): cov_matrixariance matrix.
+        X (np.ndarray): Data matrix.
         d (int): Number of variables.
 
     Returns:
         np.ndarray: Weight matrix.
     """
     W = np.zeros((d, d), dtype=np.float64)
-    mask = 0
 
     for t in range(d):
+        if not t:
+            continue
+
         j = order[t]
-        parents_mask = unpack_mask(best_parents_sets[j, pack_mask(mask, j)], j)
-        if parents_mask:
-            parents = np.where([(parents_mask >> i) & 1 for i in range(d)])[0]
-            W[j, parents] = np.linalg.solve(
-                cov_matrix[np.ix_(parents, parents)], cov_matrix[parents, j]
-            )
-        mask |= 1 << j
+        parents = order[:t]
+        W[j, parents] = predict_adaptive_lasso(X, parents, j)
 
     return W
 
 
 class ExactDAG(BaseEstimator):
-    """Exact dynamic programming-based causal discovery.
+    """Exact score-based causal discovery via subset dynamic programming.
+
+    This estimator learns a directed acyclic graph by finding the causal orderin that
+    maximizes a squared Wasserstein distance-based score. For each candidate sink, all
+    preceding variables in the ordering are used as its parent set.
+
+    The optimal ordering is found exactly using subset dynamic programming. Regression
+    residuals are standardized and compared with standard normal quantiles to compute
+    the score. Once the ordering is recovered, edge weights are estimated using adaptive
+    lasso regression.
+
+    Data preprocessing settings:
+        - `fit_intercept`: Whether to center the data before fitting. Centering also
+          enables estimation of an intercept for each variable.
 
     Attributes:
-        fit_intercept (bool): Whether to center the data.
-        penalty (float): Regularization penalty per parent.
-        causal_order_ (np.ndarray): Causal order from source to sink.
-        adjacency_matrix_ (np.ndarray): Causal weight matrix.
-        intercept_ (np.ndarray): Intercept of the regression models.
-        inertia_ (float): Residual sum of squares of the learned DAG.
+        fit_intercept (bool): Whether to center the data before fitting.
+        causal_order_ (np.ndarray): Learned causal order from source to sink.
+        adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
+        intercept_ (np.ndarray): Intercepts of the regression models. Available only
+            when `fit_intercept` is `True`.
+        score_ (float): Squared Wasserstein distance-based score of the learned DAG.
+
+    Examples:
+        >>> from exactdag import ExactDAG
+        >>> model = ExactDAG(fit_intercept=True)
+        >>> model.fit(X)
+        >>> model.causal_order_
     """
 
     fit_intercept: bool
-    penalty: float
     causal_order_: np.ndarray
     adjacency_matrix_: np.ndarray
     intercept_: np.ndarray
-    inertia_: float
+    score_: float
 
-    @validate_params(
-        {"fit_intercept": [bool], "penalty": [Interval(Real, 0, None, closed="left")]},
-        prefer_skip_nested_validation=True,
-    )
-    def __init__(self, fit_intercept: bool = True, penalty: float = 0) -> None:
+    @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
+    def __init__(self, fit_intercept: bool = True) -> None:
         """Initialize ExactDAG.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
                 True.
-            penalty (float, optional): Regularization penalty per parent. Defaults to 0.
         """
         self.fit_intercept = fit_intercept
-        self.penalty = penalty
 
     @validate_params(
         {"X": ["array-like"], "y": [None]},
@@ -287,13 +295,14 @@ class ExactDAG(BaseEstimator):
         """Fits the ExactDAG algorithm.
 
         Args:
-            X (np.typing.ArrayLike): Input data of shape (n_samples, d).
+            X (np.typing.ArrayLike): Input data.
+            y (None, optional): Ignored. Defaults to None.
 
         Returns:
             ExactDAG: The fitted estimator.
         """
-        X = cast(np.ndarray, validate_data(self, X, dtype=np.float64))  # type: ignore
-        d = X.shape[1]
+        X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
+        n, d = X.shape
 
         if self.fit_intercept:
             shift = X.mean(axis=0)
@@ -301,13 +310,12 @@ class ExactDAG(BaseEstimator):
 
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
 
-        best_scores, best_parents_sets = _parents_dp(cov_matrix, d, self.penalty)
-        sinks, self.inertia_ = _sink_dp(best_scores, d)
+        # Precompute quantiles
+        q = norm.ppf(np.linspace(0.5 / n, 1.0 - 0.5 / n, n))  # type: ignore
 
+        sinks, self.score_ = _sink_dp(X, cov_matrix, q, d)  # type: ignore
         self.causal_order_ = _causal_order(sinks, d)
-        self.adjacency_matrix_ = _ols_weights(
-            self.causal_order_, best_parents_sets, cov_matrix, d
-        )
+        self.adjacency_matrix_ = _recover_weights(self.causal_order_, X, d)  # type: ignore
 
         if self.fit_intercept:
             self.intercept_ = shift - self.adjacency_matrix_ @ shift  # type: ignore
