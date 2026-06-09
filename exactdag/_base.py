@@ -66,7 +66,7 @@ def _cholesky_solve_norm_inplace(A: np.ndarray, k: int) -> float:
         ii = i * (i + 1) // 2
         for j in range(i):
             ij = ii + j
-            for l in range(j):
+            for l in range(j):  # noqa: E741
                 A[ij] -= A[ii + l] * A[j * (j + 1) // 2 + l]
             A[ij] /= A[j * (j + 1) // 2 + j]
         j = i
