@@ -240,6 +240,22 @@ def _recover_weights(order: np.ndarray, X: np.ndarray, d: int) -> np.ndarray:
     return W
 
 
+def _gauss_quantiles(n: int) -> np.ndarray:
+    """Computes standard-normal means over equal-probability quantile bins.
+
+    Args:
+        n (int): Number of quantile bins.
+
+    Returns:
+        np.ndarray: Mean standard-normal quantile in each bin.
+    """
+    u = np.linspace(0, 1, n + 1)
+    q = norm.ppf(u)  # type: ignore
+    phi = norm.pdf(q)  # type: ignore
+    phi[0] = phi[-1] = 0
+    return n * (phi[:-1] - phi[1:])  # type: ignore
+
+
 class ExactDAG(BaseEstimator):
     """Exact score-based causal discovery via subset dynamic programming.
 
@@ -311,7 +327,7 @@ class ExactDAG(BaseEstimator):
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
 
         # Precompute quantiles
-        q = norm.ppf(np.linspace(0.5 / n, 1.0 - 0.5 / n, n))  # type: ignore
+        q = _gauss_quantiles(n)  # type: ignore
 
         sinks, self.score_ = _sink_dp(X, cov_matrix, q, d)  # type: ignore
         self.causal_order_ = _causal_order(sinks, d)
