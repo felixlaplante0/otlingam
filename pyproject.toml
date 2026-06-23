@@ -1,8 +1,8 @@
 [project]
-name = "exactdag"
-description = "Exact dynamic programming-based causal discovery"
+name = "optidag"
+description = "Optimal transport-based causal discovery using Wasserstein non-Gaussianity"
 readme = "README.md"
-urls = { "Source" = "https://github.com/felixlaplante0/exactdag" }
+urls = { "Source" = "https://github.com/felixlaplante0/optidag" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
 dependencies = ["numpy", "numba", "scikit-learn"]
@@ -19,14 +19,14 @@ requires = ["setuptools>=42", "setuptools-scm[toml]>=6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["exactdag"]
+packages = ["optidag"]
 
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "no-local-version"
 
 [tool.setuptools.package-data]
-exactdag = ["py.typed"]
+optidag = ["py.typed"]
 
 [tool.ruff]
 lint.select = [

@@ -1,16 +1,16 @@
-"""Exact score-based DAG learning via subset dynamic programming."""
+"""Exhaustive score-based DAG learning via subset dynamic programming."""
 
 from __future__ import annotations
 
 from typing import Self, cast
 
 import numpy as np
-from lingam.utils import predict_adaptive_lasso  # type: ignore
 from numba import njit  # type: ignore
-from scipy.stats import norm  # type: ignore
 from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
+
+from ._utils import gauss_quantiles, recover_weights
 
 
 @njit(cache=True, inline="always")  # type: ignore
@@ -216,57 +216,17 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-def _recover_weights(order: np.ndarray, X: np.ndarray, d: int) -> np.ndarray:
-    """Recovers regression edge weights given the causal order and parent sets.
+class ExhaustiveDAG(BaseEstimator):
+    """Exhaustive score-based causal discovery via subset dynamic programming.
 
-    Args:
-        order (np.ndarray): Causal order.
-        X (np.ndarray): Data matrix.
-        d (int): Number of variables.
-
-    Returns:
-        np.ndarray: Weight matrix.
-    """
-    W = np.zeros((d, d), dtype=np.float64)
-
-    for t in range(d):
-        if not t:
-            continue
-
-        j = order[t]
-        parents = order[:t]
-        W[j, parents] = predict_adaptive_lasso(X, parents, j)
-
-    return W
-
-
-def _gauss_quantiles(n: int) -> np.ndarray:
-    """Computes standard-normal means over equal-probability quantile bins.
-
-    Args:
-        n (int): Number of quantile bins.
-
-    Returns:
-        np.ndarray: Mean standard-normal quantile in each bin.
-    """
-    u = np.linspace(0, 1, n + 1)
-    q = norm.ppf(u)  # type: ignore
-    phi = norm.pdf(q)  # type: ignore
-    phi[0] = phi[-1] = 0
-    return n * (phi[:-1] - phi[1:])  # type: ignore
-
-
-class ExactDAG(BaseEstimator):
-    """Exact score-based causal discovery via subset dynamic programming.
-
-    This estimator learns a directed acyclic graph by finding the causal orderin that
+    This estimator learns a directed acyclic graph by finding the causal ordering that
     maximizes a squared Wasserstein distance-based score. For each candidate sink, all
     preceding variables in the ordering are used as its parent set.
 
-    The optimal ordering is found exactly using subset dynamic programming. Regression
-    residuals are standardized and compared with standard normal quantiles to compute
-    the score. Once the ordering is recovered, edge weights are estimated using adaptive
-    lasso regression.
+    The optimal ordering is found exhaustively using subset dynamic programming.
+    Regression residuals are standardized and compared with standard normal quantiles
+    to compute the score. Once the ordering is recovered, edge weights are estimated
+    using adaptive lasso regression.
 
     Data preprocessing settings:
         - `fit_intercept`: Whether to center the data before fitting. Centering also
@@ -281,8 +241,8 @@ class ExactDAG(BaseEstimator):
         score_ (float): Squared Wasserstein distance-based score of the learned DAG.
 
     Examples:
-        >>> from exactdag import ExactDAG
-        >>> model = ExactDAG(fit_intercept=True)
+        >>> from optidag import ExhaustiveDAG
+        >>> model = ExhaustiveDAG(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_
     """
@@ -295,7 +255,7 @@ class ExactDAG(BaseEstimator):
 
     @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
     def __init__(self, fit_intercept: bool = True) -> None:
-        """Initialize ExactDAG.
+        """Initializes ExhaustiveDAG.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
@@ -308,14 +268,14 @@ class ExactDAG(BaseEstimator):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
-        """Fits the ExactDAG algorithm.
+        """Fits the ExhaustiveDAG algorithm.
 
         Args:
             X (np.typing.ArrayLike): Input data.
             y (None, optional): Ignored. Defaults to None.
 
         Returns:
-            ExactDAG: The fitted estimator.
+            ExhaustiveDAG: The fitted estimator.
         """
         X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
         n, d = X.shape
@@ -326,12 +286,11 @@ class ExactDAG(BaseEstimator):
 
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
 
-        # Precompute quantiles
-        q = _gauss_quantiles(n)  # type: ignore
+        q = gauss_quantiles(n)  # type: ignore
 
         sinks, self.score_ = _sink_dp(X, cov_matrix, q, d)  # type: ignore
         self.causal_order_ = _causal_order(sinks, d)
-        self.adjacency_matrix_ = _recover_weights(self.causal_order_, X, d)  # type: ignore
+        self.adjacency_matrix_ = recover_weights(self.causal_order_, X, d)  # type: ignore
 
         if self.fit_intercept:
             self.intercept_ = shift - self.adjacency_matrix_ @ shift  # type: ignore

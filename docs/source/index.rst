@@ -1,11 +1,19 @@
-Exact DAG
-=========
+OptiDAG
+=======
 
-**exactdag** is a Python package that implements a new causal discovery algorithm with exact, exhaustive, exploration.
+**optidag** provides exhaustive and greedy causal-order learning based on Wasserstein non-Gaussianity.
+
 API Reference
 -------------
 
-.. autoclass:: exactdag.ExactDAG
+.. autoclass:: optidag.ExhaustiveDAG
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: optidag.GreedyDAG
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: optidag.disorder

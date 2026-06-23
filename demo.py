@@ -1,68 +1,132 @@
+import itertools
 import time
 
 import lingam
+import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
 
-from exactdag import ExactDAG
+from optidag import ExhaustiveDAG, GreedyDAG, disorder
+
+NOISES = {
+    "uniform": lambda size: np.random.uniform(-1, 1, size),
+    "laplace": lambda size: np.random.laplace(size=size),
+    "exponential": lambda size: np.random.exponential(size=size),
+    "gumbel": lambda size: np.random.gumbel(size=size),
+    "gamma": lambda size: np.random.gamma(2, size=size),
+}
+
+MODELS = {
+    "ExhaustiveDAG": ExhaustiveDAG,
+    "GreedyDAG": GreedyDAG,
+    "ICA-LiNGAM": lingam.ICALiNGAM,
+    "DirectLiNGAM": lingam.DirectLiNGAM,
+}
 
 
-def generate_data(n, d, graph_type="er", p=0.3):
-    B = np.zeros((d, d))
-    for i in range(1, d):
-        if graph_type == "er":
-            idx = [j for j in range(i) if np.random.rand() < p]
-        else:
-            degrees = np.sum(B[:i, :i] != 0, axis=0) + np.sum(B[:i, :i] != 0, axis=1)
-            prob = np.ones(i) / i if np.sum(degrees) == 0 else degrees / np.sum(degrees)
-            idx = np.random.choice(i, size=min(i, 2), replace=False, p=prob)
-        for j in idx:
-            B[i, j] = np.random.uniform(0.5, 2.0)
+def simulate_data(n, d, graph_type, noise_type):
+    seed = int(np.random.randint(1 << 32))
+    graph = (
+        nx.gnp_random_graph(d, 0.3, seed=seed)
+        if graph_type == "erdos-renyi"
+        else nx.barabasi_albert_graph(d, 2, seed=seed)
+    )
+    adjacency = nx.to_numpy_array(graph)
+    rank = np.argsort(np.random.permutation(d))
+    weights = adjacency * (rank[:, None] > rank) * np.random.uniform(0.5, 2, (d, d))
+    weights *= np.random.choice((-1, 1), (d, d))
 
-    p = np.random.permutation(d)
-    B = B[np.ix_(p, p)]
-    X = np.random.uniform(-1, 1, (n, d)) @ np.linalg.inv(np.eye(d) - B).T
-
-    return X, B
+    noise = NOISES[noise_type]((n, d))
+    noise = (noise - noise.mean(0)) / noise.std(0)
+    return np.linalg.solve(np.eye(d) - weights, noise.T).T, weights
 
 
-def run(n=500, d=10, n_runs=10, graph_type="er", penalty=1e-3):
-    res = []
-    for _ in range(n_runs):
-        X, B_true = generate_data(n, d, graph_type)
-        for name, model in {
-            "ExactDAG": ExactDAG(penalty=penalty),
-            "ICA": lingam.ICALiNGAM(),
-            "Direct": lingam.DirectLiNGAM(),
-        }.items():
-            t0 = time.perf_counter()
-            model.fit(X)
-            dt = time.perf_counter() - t0
-            shd = np.sum((B_true != 0) != (model.adjacency_matrix_ != 0))
-            res.append(
-                {
-                    "Method": name,
-                    "SHD": shd,
-                    "Edges": np.sum(model.adjacency_matrix_ != 0),
-                    "Time": dt,
-                }
+def shd(true_weights, estimated_weights):
+    return np.count_nonzero((true_weights != 0) != (estimated_weights != 0))
+
+
+np.random.seed(42)
+n = 1000
+d = 10
+repetitions = 10
+results = []
+
+for noise_type, graph_type, _ in itertools.product(
+    NOISES, ("erdos-renyi", "scale-free"), range(repetitions)
+):
+    data, true_weights = simulate_data(n, d, graph_type, noise_type)
+
+    for name, model_factory in MODELS.items():
+        model = model_factory()
+        start = time.perf_counter()
+        model.fit(data)
+        elapsed = time.perf_counter() - start
+
+        results.append(
+            {
+                "Noise": noise_type,
+                "Graph": graph_type,
+                "Method": name,
+                "SHD": shd(true_weights, model.adjacency_matrix_),
+                "Disorder": disorder(model.causal_order_, true_weights),
+                "Time": elapsed,
+            }
+        )
+
+results = pd.DataFrame(results)
+grouped = results.groupby(["Noise", "Graph", "Method"])
+means = grouped.mean()
+errors = grouped.std()
+
+noise_types = list(NOISES)
+graph_types = ("erdos-renyi", "scale-free")
+x = np.arange(len(noise_types))
+width = 0.2
+
+fig, axes = plt.subplots(
+    len(graph_types),
+    3,
+    figsize=(13, 7),
+    sharex=True,
+    layout="constrained",
+)
+metrics = (
+    ("SHD", "Structural Hamming distance"),
+    ("Disorder", "Disorder"),
+    ("Time", "Fit time (seconds)"),
+)
+
+for row, graph_type in enumerate(graph_types):
+    for column, (metric, title) in enumerate(metrics):
+        axis = axes[row, column]
+        for index, method in enumerate(MODELS):
+            keys = [(noise, graph_type, method) for noise in noise_types]
+            values = np.array([means.loc[key, metric] for key in keys])
+            yerr = np.array([errors.loc[key, metric] for key in keys])
+            axis.bar(
+                x + (index - (len(MODELS) - 1) / 2) * width,
+                values,
+                width,
+                yerr=yerr,
+                capsize=2,
+                label=method,
             )
 
-    df = pd.DataFrame(res).groupby("Method").agg(["mean", "std"])
-    out = pd.DataFrame()
-    for col in ["SHD", "Edges", "Time"]:
-        out[col] = df[col].apply(
-            lambda x: (
-                f"{x['mean']:.2f} ± {x['std']:.2f}"
-                if col != "Time"
-                else f"{x['mean']:.3f}s"
-            ),
-            axis=1,
-        )
-    print(f"\n--- {graph_type.upper()} (n={n}, d={d}, runs={n_runs}) ---\n{out}")
+        if row == 0:
+            axis.set_title(title)
+        axis.set_xticks(x, noise_types)
+        axis.grid(axis="y", alpha=0.3)
 
+    axes[row, 0].set_ylabel(f"{graph_type}\nMean")
+    axes[row, 2].set_yscale("log")
 
-if __name__ == "__main__":
-    np.random.seed(42)
-    for g in ["er", "sf"]:
-        run(n=1000, d=10, n_runs=10, graph_type=g, penalty=1e-3)
+handles, labels = axes[0, 0].get_legend_handles_labels()
+fig.legend(
+    handles,
+    labels,
+    loc="outside lower center",
+    ncols=len(MODELS),
+    frameon=False,
+)
+plt.show()
