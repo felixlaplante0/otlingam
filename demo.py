@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from optidag import ExhaustiveW2, GreedyW2, disorder
+from otdag import ExhaustiveW2, GreedyW2, disorder
 
 NOISES = {
     "uniform": lambda size: np.random.uniform(-1, 1, size),

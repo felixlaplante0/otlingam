@@ -33,7 +33,7 @@ class GreedyW2(BaseEstimator):
         score_ (float): Sum of the selected squared Wasserstein scores.
 
     Examples:
-        >>> from optidag import GreedyW2
+        >>> from otdag import GreedyW2
         >>> model = GreedyW2(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_

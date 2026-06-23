@@ -241,7 +241,7 @@ class ExhaustiveW2(BaseEstimator):
         score_ (float): Squared Wasserstein distance-based score of the learned DAG.
 
     Examples:
-        >>> from optidag import ExhaustiveW2
+        >>> from otdag import ExhaustiveW2
         >>> model = ExhaustiveW2(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_

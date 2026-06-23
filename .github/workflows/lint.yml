@@ -16,6 +16,6 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Format check
-        run: ruff format optidag
+        run: ruff format otdag
       - name: Lint
-        run: ruff check optidag
+        run: ruff check otdag
