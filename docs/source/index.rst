@@ -6,12 +6,12 @@ OptiDAG
 API Reference
 -------------
 
-.. autoclass:: optidag.ExhaustiveDAG
+.. autoclass:: optidag.ExhaustiveW2
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: optidag.GreedyDAG
+.. autoclass:: optidag.GreedyW2
    :members:
    :undoc-members:
    :show-inheritance:

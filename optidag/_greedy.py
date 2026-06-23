@@ -12,7 +12,7 @@ from sklearn.utils.validation import validate_data  # type: ignore
 from ._utils import gauss_quantiles, recover_weights
 
 
-class GreedyDAG(BaseEstimator):
+class GreedyW2(BaseEstimator):
     """Greedy score-based causal discovery by sequential source removal.
 
     This estimator repeatedly selects the most non-Gaussian standardized residual as
@@ -33,8 +33,8 @@ class GreedyDAG(BaseEstimator):
         score_ (float): Sum of the selected squared Wasserstein scores.
 
     Examples:
-        >>> from optidag import GreedyDAG
-        >>> model = GreedyDAG(fit_intercept=True)
+        >>> from optidag import GreedyW2
+        >>> model = GreedyW2(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_
     """
@@ -47,7 +47,7 @@ class GreedyDAG(BaseEstimator):
 
     @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
     def __init__(self, fit_intercept: bool = True) -> None:
-        """Initializes GreedyDAG.
+        """Initializes GreedyW2.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
@@ -60,14 +60,14 @@ class GreedyDAG(BaseEstimator):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
-        """Fits the GreedyDAG algorithm.
+        """Fits the GreedyW2 algorithm.
 
         Args:
             X (np.typing.ArrayLike): Input data.
             y (None, optional): Ignored. Defaults to None.
 
         Returns:
-            GreedyDAG: The fitted estimator.
+            GreedyW2: The fitted estimator.
 
         Raises:
             ValueError: If a residual has zero variance.

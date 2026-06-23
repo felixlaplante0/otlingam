@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from optidag import ExhaustiveDAG, GreedyDAG, disorder
+from optidag import ExhaustiveW2, GreedyW2, disorder
 
 NOISES = {
     "uniform": lambda size: np.random.uniform(-1, 1, size),
@@ -18,8 +18,8 @@ NOISES = {
 }
 
 MODELS = {
-    "ExhaustiveDAG": ExhaustiveDAG,
-    "GreedyDAG": GreedyDAG,
+    "ExhaustiveW2": ExhaustiveW2,
+    "GreedyW2": GreedyW2,
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }
