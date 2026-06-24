@@ -82,7 +82,7 @@ class GreedyW2(BaseEstimator):
         residuals = X.copy()
         remaining = list(range(d))
         order = np.empty(d, dtype=int)
-        q = gauss_quantiles(n)
+        quantiles = gauss_quantiles(n)
         score = 0.0
 
         for t in range(d):
@@ -92,7 +92,7 @@ class GreedyW2(BaseEstimator):
                 raise ValueError("X must not contain a constant residual.")
 
             standardized = current / scales
-            scores = np.mean((np.sort(standardized, axis=0) - q[:, None]) ** 2, axis=0)
+            scores = np.mean((np.sort(standardized, axis=0) - quantiles[:, None]) ** 2, axis=0)
             source_index = np.argmax(scores)
             source = remaining.pop(source_index)
             order[t] = source
