@@ -128,14 +128,19 @@ def _compute_residuals(
 
 @njit(cache=True, inline="always")  # type: ignore
 def _score(
-    X: np.ndarray, cov_matrix: np.ndarray, q: np.ndarray, target: int, mask: int, d: int
+    X: np.ndarray,
+    cov_matrix: np.ndarray,
+    quantiles: np.ndarray,
+    target: int,
+    mask: int,
+    d: int,
 ) -> float:
     """Calculates the squared W2 distance-based score.
 
     Args:
         X (np.ndarray): Input data.
         cov_matrix (np.ndarray): Covariance matrix.
-        q (np.ndarray): Precomputed N(0, 1) quantiles.
+        quantiles (np.ndarray): Precomputed N(0, 1) quantiles.
         target (int): Index of the response variable.
         mask (int): Bitmask encoding the predictor variables.
         d (int): Number of variables.
@@ -153,19 +158,19 @@ def _score(
     z /= np.sqrt(rss / n)
     z.sort()
 
-    return np.mean((z - q) ** 2)  # type: ignore
+    return np.mean((z - quantiles) ** 2)  # type: ignore
 
 
 @njit(cache=True, fastmath=True)  # type: ignore
 def _sink_dp(
-    X: np.ndarray, cov_matrix: np.ndarray, q: np.ndarray, d: int
+    X: np.ndarray, cov_matrix: np.ndarray, quantiles: np.ndarray, d: int
 ) -> tuple[np.ndarray, float]:
     """Finds the optimal sink node for every subset via dynamic programming.
 
     Args:
         X (np.ndarray): Input data.
         cov_matrix (np.ndarray): Covariance matrix.
-        q (np.ndarray): Precomputed N(0, 1) quantiles.
+        quantiles (np.ndarray): Precomputed N(0, 1) quantiles.
         d (int): Number of variables.
 
     Returns:
@@ -183,7 +188,7 @@ def _sink_dp(
         while bits:
             if bits & 1:
                 prev_mask = mask ^ (1 << s)
-                score = H[prev_mask] + _score(X, cov_matrix, q, s, prev_mask, d)
+                score = H[prev_mask] + _score(X, cov_matrix, quantiles, s, prev_mask, d)
                 if score > cur_best_score:
                     cur_best_score = score
                     cur_best_sink = s
@@ -286,9 +291,9 @@ class ExhaustiveW2(BaseEstimator):
 
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
 
-        q = gauss_quantiles(n)  # type: ignore
+        quantiles = gauss_quantiles(n)  # type: ignore
 
-        sinks, self.score_ = _sink_dp(X, cov_matrix, q, d)  # type: ignore
+        sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)  # type: ignore
         self.causal_order_ = _causal_order(sinks, d)
         self.adjacency_matrix_ = recover_weights(self.causal_order_, X, d)  # type: ignore
 
