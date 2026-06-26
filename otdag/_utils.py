@@ -19,20 +19,6 @@ def gauss_quantiles(n: int) -> np.ndarray:
     return n * (phi[:-1] - phi[1:])
 
 
-def gauss_wasserstein_sq(x: np.ndarray) -> np.ndarray:
-    """Computes the squared Wasserstein distance to the standard-normal.
-
-    Args:
-        x (np.ndarray): Array of observed values.
-
-    Returns:
-        np.ndarray: Squared Wasserstein distance to the standard-normal.
-    """
-    q = gauss_quantiles(x.size)
-    x = np.sort(x)
-    return np.mean((x - q) ** 2)
-
-
 def recover_weights(order: np.ndarray, X: np.ndarray, d: int) -> np.ndarray:
     """Recovers regression edge weights given the causal order and parent sets.
 

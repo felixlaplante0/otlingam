@@ -1,7 +1,3 @@
-"""Exhaustive score-based DAG learning via subset dynamic programming."""
-
-from __future__ import annotations
-
 from typing import Self, cast
 
 import numpy as np

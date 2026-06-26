@@ -1,7 +1,3 @@
-"""Greedy score-based DAG learning by sequential source removal."""
-
-from __future__ import annotations
-
 from typing import Self
 
 import numpy as np
@@ -72,7 +68,7 @@ class GreedyW2(BaseEstimator):
         Raises:
             ValueError: If a residual has zero variance.
         """
-        X = np.asarray(validate_data(self, X, dtype=np.float64))
+        X = np.asarray(validate_data(self, X))  # type: ignore
         n, d = X.shape
 
         if self.fit_intercept:
@@ -92,7 +88,9 @@ class GreedyW2(BaseEstimator):
                 raise ValueError("X must not contain a constant residual.")
 
             standardized = current / scales
-            scores = np.mean((np.sort(standardized, axis=0) - quantiles[:, None]) ** 2, axis=0)
+            scores = np.mean(
+                (np.sort(standardized, axis=0) - quantiles[:, None]) ** 2, axis=0
+            )
             source_index = np.argmax(scores)
             source = remaining.pop(source_index)
             order[t] = source
@@ -102,8 +100,10 @@ class GreedyW2(BaseEstimator):
                 break
 
             source_residual = residuals[:, source]
-            effects = source_residual @ residuals[:, remaining] / (
-                source_residual @ source_residual
+            effects = (
+                source_residual
+                @ residuals[:, remaining]
+                / (source_residual @ source_residual)
             )
             residuals[:, remaining] -= np.outer(source_residual, effects)
 
