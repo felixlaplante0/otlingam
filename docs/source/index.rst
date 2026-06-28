@@ -1,19 +1,19 @@
-OTDAG
+OTLiNGAM
 =======
 
-**otdag** provides exhaustive and greedy causal-order learning based on Wasserstein non-Gaussianity.
+**otlingam** provides exhaustive and greedy causal-order learning based on Wasserstein non-Gaussianity.
 
 API Reference
 -------------
 
-.. autoclass:: otdag.ExhaustiveW2
+.. autoclass:: otlingam.ExhaustiveLiNGAM
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: otdag.GreedyW2
+.. autoclass:: otlingam.GreedyLiNGAM
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autofunction:: otdag.disorder
+.. autofunction:: otlingam.disorder

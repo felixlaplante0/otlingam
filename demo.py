@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from otdag import ExhaustiveW2, GreedyW2, disorder
+from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, disorder
 
 NOISES = {
     "uniform": lambda size: np.random.uniform(-1, 1, size),
@@ -18,8 +18,8 @@ NOISES = {
 }
 
 MODELS = {
-    "ExhaustiveW2": ExhaustiveW2,
-    "GreedyW2": GreedyW2,
+    "ExhaustiveLiNGAM": ExhaustiveLiNGAM,
+    "GreedyLiNGAM": GreedyLiNGAM,
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }

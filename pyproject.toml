@@ -1,8 +1,8 @@
 [project]
-name = "otdag"
+name = "otlingam"
 description = "Optimal transport-based causal discovery using Wasserstein non-Gaussianity"
 readme = "README.md"
-urls = { "Source" = "https://github.com/felixlaplante0/otdag" }
+urls = { "Source" = "https://github.com/felixlaplante0/otlingam" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
 dependencies = ["numpy", "numba", "scikit-learn", "lingam"]
@@ -19,14 +19,14 @@ requires = ["setuptools>=42", "setuptools-scm[toml]>=6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["otdag"]
+packages = ["otlingam"]
 
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "no-local-version"
 
 [tool.setuptools.package-data]
-otdag = ["py.typed"]
+otlingam = ["py.typed"]
 
 [tool.ruff]
 lint.select = [

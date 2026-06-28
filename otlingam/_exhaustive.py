@@ -217,7 +217,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveW2(BaseEstimator):
+class ExhaustiveLiNGAM(BaseEstimator):
     """Exhaustive score-based causal discovery via subset dynamic programming.
 
     This estimator learns a directed acyclic graph by finding the causal ordering that
@@ -242,8 +242,8 @@ class ExhaustiveW2(BaseEstimator):
         score_ (float): Squared Wasserstein distance-based score of the learned DAG.
 
     Examples:
-        >>> from otdag import ExhaustiveW2
-        >>> model = ExhaustiveW2(fit_intercept=True)
+        >>> from otlingam import ExhaustiveLiNGAM
+        >>> model = ExhaustiveLiNGAM(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_
     """
@@ -256,7 +256,7 @@ class ExhaustiveW2(BaseEstimator):
 
     @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
     def __init__(self, fit_intercept: bool = True) -> None:
-        """Initializes ExhaustiveW2.
+        """Initializes ExhaustiveLiNGAM.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
@@ -269,14 +269,14 @@ class ExhaustiveW2(BaseEstimator):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
-        """Fits the ExhaustiveW2 algorithm.
+        """Fits the ExhaustiveLiNGAM algorithm.
 
         Args:
             X (np.typing.ArrayLike): Input data.
             y (None, optional): Ignored. Defaults to None.
 
         Returns:
-            ExhaustiveW2: The fitted estimator.
+            ExhaustiveLiNGAM: The fitted estimator.
         """
         X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
         n, d = X.shape
