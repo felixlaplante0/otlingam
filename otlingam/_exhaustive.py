@@ -1,10 +1,10 @@
 from typing import Self, cast
 
 import numpy as np
+from lingam.base import _BaseLiNGAM
 from numba import njit  # type: ignore
-from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
-from sklearn.utils.validation import validate_data  # type: ignore
+from sklearn.utils.validation import validate_data
 
 from ._utils import gauss_quantiles, recover_weights
 
@@ -206,7 +206,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     Returns:
         np.ndarray: Causal order from source to sink.
     """
-    order = np.empty(d, dtype=np.int32)
+    order = np.empty(d, dtype=int)
     mask = (1 << d) - 1
 
     for i in range(d):
@@ -217,7 +217,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveLiNGAM(BaseEstimator):
+class ExhaustiveLiNGAM(_BaseLiNGAM):
     """Exhaustive score-based causal discovery via subset dynamic programming.
 
     This estimator learns a directed acyclic graph by finding the causal ordering that
@@ -235,7 +235,11 @@ class ExhaustiveLiNGAM(BaseEstimator):
 
     Attributes:
         fit_intercept (bool): Whether to center the data before fitting.
-        causal_order_ (np.ndarray): Learned causal order from source to sink.
+        _causal_order (list[np.integer] | None): Internal causal ordering. None before
+            fitting.
+        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix.
+            None before fitting.
+        causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only
             when `fit_intercept` is `True`.
@@ -249,8 +253,6 @@ class ExhaustiveLiNGAM(BaseEstimator):
     """
 
     fit_intercept: bool
-    causal_order_: np.ndarray
-    adjacency_matrix_: np.ndarray
     intercept_: np.ndarray
     score_: float
 
@@ -262,6 +264,7 @@ class ExhaustiveLiNGAM(BaseEstimator):
             fit_intercept (bool, optional): Whether to center the data. Defaults to
                 True.
         """
+        super().__init__()
         self.fit_intercept = fit_intercept
 
     @validate_params(
@@ -278,7 +281,10 @@ class ExhaustiveLiNGAM(BaseEstimator):
         Returns:
             ExhaustiveLiNGAM: The fitted estimator.
         """
-        X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
+        X = cast(
+            np.ndarray,
+            validate_data(self, X, dtype=np.float64),  # type: ignore
+        )
         n, d = X.shape
 
         if self.fit_intercept:
@@ -290,10 +296,11 @@ class ExhaustiveLiNGAM(BaseEstimator):
         quantiles = gauss_quantiles(n)  # type: ignore
 
         sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)  # type: ignore
-        self.causal_order_ = _causal_order(sinks, d)
-        self.adjacency_matrix_ = recover_weights(self.causal_order_, X, d)  # type: ignore
+        order = _causal_order(sinks, d)
+        self._causal_order = list(order)
+        self._adjacency_matrix = recover_weights(order, X, d)  # type: ignore
 
         if self.fit_intercept:
-            self.intercept_ = shift - self.adjacency_matrix_ @ shift  # type: ignore
+            self.intercept_ = shift - self._adjacency_matrix @ shift  # type: ignore
 
         return self

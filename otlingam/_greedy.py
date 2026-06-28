@@ -1,14 +1,14 @@
-from typing import Self
+from typing import Self, cast
 
 import numpy as np
-from sklearn.base import BaseEstimator  # type: ignore
+from lingam.base import _BaseLiNGAM  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ._utils import gauss_quantiles, recover_weights
 
 
-class GreedyLiNGAM(BaseEstimator):
+class GreedyLiNGAM(_BaseLiNGAM):
     """Greedy score-based causal discovery by sequential source removal.
 
     This estimator repeatedly selects the most non-Gaussian standardized residual as
@@ -22,7 +22,11 @@ class GreedyLiNGAM(BaseEstimator):
 
     Attributes:
         fit_intercept (bool): Whether to center the data before fitting.
-        causal_order_ (np.ndarray): Learned causal order from source to sink.
+        _causal_order (list[np.integer] | None): Internal causal ordering. None before
+            fitting.
+        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix.
+            None before fitting.
+        causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only
             when `fit_intercept` is `True`.
@@ -36,8 +40,6 @@ class GreedyLiNGAM(BaseEstimator):
     """
 
     fit_intercept: bool
-    causal_order_: np.ndarray
-    adjacency_matrix_: np.ndarray
     intercept_: np.ndarray
     score_: float
 
@@ -49,6 +51,7 @@ class GreedyLiNGAM(BaseEstimator):
             fit_intercept (bool, optional): Whether to center the data. Defaults to
                 True.
         """
+        super().__init__()
         self.fit_intercept = fit_intercept
 
     @validate_params(
@@ -68,7 +71,7 @@ class GreedyLiNGAM(BaseEstimator):
         Raises:
             ValueError: If a residual has zero variance.
         """
-        X = np.asarray(validate_data(self, X))  # type: ignore
+        X = cast(np.ndarray, validate_data(self, X))  # type: ignore
         n, d = X.shape
 
         if self.fit_intercept:
@@ -107,11 +110,11 @@ class GreedyLiNGAM(BaseEstimator):
             )
             residuals[:, remaining] -= np.outer(source_residual, effects)
 
-        self.causal_order_ = order
-        self.adjacency_matrix_ = recover_weights(order, X, d)
+        self._causal_order = list(order)
+        self._adjacency_matrix = recover_weights(order, X, d)
         self.score_ = float(score)
 
         if self.fit_intercept:
-            self.intercept_ = shift - self.adjacency_matrix_ @ shift
+            self.intercept_ = shift - self._adjacency_matrix @ shift
 
         return self

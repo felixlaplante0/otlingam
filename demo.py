@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, disorder
+from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM, disorder
 
 NOISES = {
     "uniform": lambda size: np.random.uniform(-1, 1, size),
@@ -20,13 +20,14 @@ NOISES = {
 MODELS = {
     "ExhaustiveLiNGAM": ExhaustiveLiNGAM,
     "GreedyLiNGAM": GreedyLiNGAM,
+    "OT ICA-LiNGAM": ICALiNGAM,
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }
 
 
 def simulate_data(n, d, graph_type, noise_type):
-    seed = int(np.random.randint(1 << 32))
+    seed = int(np.random.randint(np.iinfo(np.int32).max))
     graph = (
         nx.gnp_random_graph(d, 0.3, seed=seed)
         if graph_type == "erdos-renyi"
