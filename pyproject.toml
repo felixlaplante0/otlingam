@@ -5,7 +5,7 @@ readme = "README.md"
 urls = { "Source" = "https://github.com/felixlaplante0/otlingam" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
-dependencies = ["numpy", "numba", "scikit-learn", "lingam", "otica"]
+dependencies = ["numpy", "numba", "scikit-learn", "lingam"]
 dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
