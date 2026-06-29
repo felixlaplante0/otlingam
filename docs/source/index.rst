@@ -27,13 +27,13 @@ For a candidate order :math:`\sigma \in \mathfrak{S}_d`, let :math:`R_j(\sigma)`
 
 .. math::
 
-   G(\sigma) \coloneqq \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
+   G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
 
 Given observations :math:`X^{(1)}, \ldots, X^{(n)}`, let :math:`\widehat{R}_j^{(i)}(\sigma)` be the ordinary least-squares residual for observation :math:`i`. OTLiNGAM maximizes the empirical order objective
 
 .. math::
 
-   \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) \coloneqq \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
+   \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
 
 At the population level, the maximizers of :math:`G` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
 
