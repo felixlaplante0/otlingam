@@ -2,10 +2,9 @@ from typing import Self, cast
 
 import numpy as np
 from lingam import ICALiNGAM as BaseICALiNGAM
+from otica import OTICA
 from scipy.optimize import linear_sum_assignment  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
-
-from otica import OTICA
 
 
 class ICALiNGAM(BaseICALiNGAM):
@@ -51,7 +50,6 @@ class ICALiNGAM(BaseICALiNGAM):
         )
 
         ica = OTICA(
-            init="random",
             max_iter=self._max_iter,
             random_state=self._random_state,  # type: ignore
         ).fit(X)  # type: ignore
