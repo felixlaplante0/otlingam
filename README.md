@@ -19,7 +19,7 @@
 The estimators assume the linear structural equation model
 
 $$
-X_j = \sum_{k \in \operatorname{pa}(j)} B_{jk} X_k + \varepsilon_j,
+X_j = \sum_{k \in \mathrm{pa}(j)} B_{jk} X_k + \varepsilon_j,
 $$
 
 where the graph is acyclic and the structural noises are mutually independent, centered, and have finite nonzero variances. Causal-order identification additionally requires at most one Gaussian structural noise.
