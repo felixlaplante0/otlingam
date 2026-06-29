@@ -19,23 +19,23 @@ The estimators assume the linear structural equation model
 
 .. math::
 
-   X_j = \sum_{k \in \operatorname{pa}(j)} B_{jk} X_k + \varepsilon_j,
+   X_j = \sum_{k \in \operatorname{Pa}(j)} B_{jk} X_k + \varepsilon_j,
 
 where the graph is acyclic and the structural noises are mutually independent, centered, and have finite nonzero variances. Causal-order identification additionally requires at most one Gaussian structural noise.
 
-For a candidate order, each variable is regressed on its predecessors. Let :math:`X_k^{(1:)} \leq \cdots \leq X_k^{(n:)}` denote the order statistics of a standardized residual and define
+For a candidate order :math:`\sigma \in \mathfrak{S}_d`, let :math:`R_j(\sigma)` be the population residual obtained by regressing :math:`X_j` on its predecessors under :math:`\sigma`. The oracle Wasserstein order objective is
 
 .. math::
 
-   z_i^\star \coloneqq n \int_{\frac{i - 1}{n}}^{\frac{i}{n}} \Phi^{-1}(u) \, du, \quad i \in \left\{ 1, \ldots, n \right\}.
+   G(\sigma) \coloneqq \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
 
-The empirical residual criterion is
+Given observations :math:`X^{(1)}, \ldots, X^{(n)}`, let :math:`\widehat{R}_j^{(i)}(\sigma)` be the ordinary least-squares residual for observation :math:`i`. OTLiNGAM maximizes the empirical order objective
 
 .. math::
 
-   \widehat{D}(X_k) \coloneqq \frac{1}{n} \sum_{i = 1}^{n} \left( X_k^{(i:)} - z_i^\star \right)^2.
+   \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) \coloneqq \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
 
-This criterion equals the empirical squared 2-Wasserstein distance up to an additive constant that depends only on :math:`n`. The constant does not affect comparisons between residuals or candidate orders. At the population level, a topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total criterion.
+At the population level, the maximizers of :math:`G` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
 
 Algorithms
 ----------
