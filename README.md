@@ -27,13 +27,13 @@ where the graph is acyclic and the structural noises are mutually independent, c
 For a candidate order, each variable is regressed on its predecessors. Let $X_k^{(1:)} \leq \cdots \leq X_k^{(n:)}$ denote the order statistics of a standardized residual and define
 
 $$
-z_i^\star \coloneqq n \int_{\frac{i - 1}{n}}^{\frac{i}{n}} \Phi^{-1}(u) \, du, \quad i \in \left\{ 1, \ldots, n \right\}.
+z_i^\star \coloneqq n \int_{\frac{i - 1}{n}}^{\frac{i}{n}} \Phi^{-1}(u) \, du, \quad i \in \big\{ 1, \ldots, n \right\}.
 $$
 
 The empirical residual criterion is
 
 $$
-\widehat{D}(X_k) \coloneqq \frac{1}{n} \sum_{i = 1}^{n} \left( X_k^{(i:)} - z_i^\star \right)^2.
+\widehat{D}(X_k) \coloneqq \frac{1}{n} \sum_{i = 1}^{n} \big( X_k^{(i:)} - z_i^\star \right)^2.
 $$
 
 This criterion equals the empirical squared 2-Wasserstein distance up to an additive constant that depends only on $n$. The constant does not affect comparisons between residuals or candidate orders. At the population level, a topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total criterion.
