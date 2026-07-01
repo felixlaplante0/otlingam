@@ -30,10 +30,10 @@ MODELS = {
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }
 
-rng = np.random.default_rng(0)
+np.random.seed(0)
 
 # Warmup run to avoid including compilation time in the timing results
-warmup_data, _ = gen_laplace(250, 7, 0.4, rng)
+warmup_data, _ = gen_laplace(250, 7, 0.4)
 ExhaustiveLiNGAM().fit(warmup_data)
 
 results = []
@@ -43,7 +43,7 @@ for sweep, grid, fixed_n, fixed_d in (
 ):
     for value in grid:
         for repetition in range(5):
-            data, _ = gen_laplace(fixed_n or value, fixed_d or value, 0.4, rng)
+            data, _ = gen_laplace(fixed_n or value, fixed_d or value, 0.4)
             for name, factory in MODELS.items():
                 if fixed_d is None and value > 12 and name == "ExhaustiveLiNGAM":
                     continue

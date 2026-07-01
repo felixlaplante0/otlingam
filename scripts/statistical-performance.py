@@ -38,7 +38,7 @@ MODELS = {
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }
 METRICS = ("Disorder", "Structural Hamming distance", "F1 score")
-rng = np.random.default_rng(0)
+np.random.seed(0)
 
 
 def fit(data, weights, seed):
@@ -59,7 +59,7 @@ def fit(data, weights, seed):
         }
 
 
-def nd_results():
+def nd_results(graph_type):
     results = []
     for sweep, grid, fixed_n, fixed_d in (
         ("n", (250, 500, 1000, 2000, 4000), None, 7),
@@ -68,7 +68,10 @@ def nd_results():
         for value in grid:
             for repetition in range(10):
                 data, weights = gen_laplace(
-                    fixed_n or value, fixed_d or value, 0.4, rng
+                    fixed_n or value,
+                    fixed_d or value,
+                    0.4,
+                    graph_type=graph_type,
                 )
                 results.extend(
                     {"Sweep": sweep, "Value": value, **result}
@@ -78,11 +81,17 @@ def nd_results():
     return pd.DataFrame(results)
 
 
-def heterogeneity_results():
+def heterogeneity_results(graph_type):
     results = []
     for maximum_df in (3, 5, 10, 20, 40):
         for repetition in range(12):
-            data, weights = gen_t(3000, 8, 0.4, np.linspace(3, maximum_df, 8), rng)
+            data, weights = gen_t(
+                3000,
+                8,
+                0.4,
+                np.linspace(3, maximum_df, 8),
+                graph_type=graph_type,
+            )
             results.extend(
                 {"Value": maximum_df, **result}
                 for result in fit(data, weights, repetition)
@@ -113,22 +122,30 @@ parser = argparse.ArgumentParser()
 mode = parser.add_mutually_exclusive_group(required=True)
 mode.add_argument("--nd", action="store_true")
 mode.add_argument("--heterogeneity", action="store_true")
+graph = parser.add_mutually_exclusive_group(required=True)
+graph.add_argument("--er", action="store_const", const="er", dest="graph_type")
+graph.add_argument("--sf", action="store_const", const="sf", dest="graph_type")
 args = parser.parse_args()
+graph_title = {
+    "er": "Erdös–Rényi",
+    "sf": "Scale-free",
+}[args.graph_type]
 
 if args.nd:
-    results = nd_results()
+    results = nd_results(args.graph_type)
     figure, axes = plt.subplots(2, 3, figsize=(24, 10), layout="constrained")
+    figure.suptitle(graph_title)
     for row, (sweep, xlabel) in enumerate(
         (("n", "n (sample size), d = 7"), ("d", "d (dimension), n = 1000"))
     ):
         plot_row(axes[row], results[results["Sweep"] == sweep], xlabel)
-    output = "../figures/varying-nd.pdf"
+    output = f"../figures/varying-nd-{args.graph_type}.pdf"
 else:
-    results = heterogeneity_results()
+    results = heterogeneity_results(args.graph_type)
     figure, axes = plt.subplots(1, 3, figsize=(24, 5), layout="constrained")
-    figure.suptitle("Noise heterogeneity")
+    figure.suptitle(f"Noise heterogeneity: {graph_title}")
     plot_row(axes, results, "Maximum degrees of freedom")
-    output = "../figures/noise-heterogeneity.pdf"
+    output = f"../figures/noise-heterogeneity-{args.graph_type}.pdf"
 
 figure.savefig(output)
 plt.show()
