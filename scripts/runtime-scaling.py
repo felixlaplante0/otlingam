@@ -71,6 +71,7 @@ for axis, (sweep, xlabel, title) in zip(
         ("n", "n (sample size), d = 7", "Runtime scaling with sample size"),
         ("d", "d (dimension), n = 1000", "Runtime scaling with dimension"),
     ),
+    strict=True,
 ):
     sns.lineplot(
         data=results[results["Sweep"] == sweep],

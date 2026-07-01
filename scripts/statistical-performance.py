@@ -101,7 +101,7 @@ def heterogeneity_results(graph_type):
 
 
 def plot_row(axes, results, xlabel):
-    for axis, metric in zip(axes, METRICS):
+    for axis, metric in zip(axes, METRICS, strict=True):
         sns.lineplot(
             data=results,
             x="Value",
