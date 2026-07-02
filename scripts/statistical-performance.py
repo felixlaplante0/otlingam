@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics import f1_score
 
 from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM, disorder
 from utils import gen_laplace, gen_t
@@ -25,9 +24,7 @@ plt.rcParams.update(
 )
 
 # Filter warnings from FastICA not converging
-warnings.filterwarnings(
-    "ignore", message="FastICA did not converge.*", category=ConvergenceWarning
-)
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 # Set defaults
 MODELS = {
@@ -37,115 +34,127 @@ MODELS = {
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
 }
-METRICS = ("Disorder", "Structural Hamming distance", "F1 score")
+GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
+n_runs = 20
 np.random.seed(0)
 
 
-def fit(data, weights, seed):
-    for name, factory in MODELS.items():
-        model = (
-            factory(random_state=seed)
-            if "ICA" in name or "Direct" in name
-            else factory()
-        )
-        model.fit(data)
-        estimated = np.abs(model.adjacency_matrix_) > 0.1
-        truth = weights != 0
-        yield {
-            "Method": name,
-            "Disorder": disorder(model.causal_order_, weights),
-            "Structural Hamming distance": np.count_nonzero(truth != estimated),
-            "F1 score": f1_score(truth.ravel(), estimated.ravel()),
-        }
-
-
-def nd_results(graph_type):
+def nd_results(graph_type, edges_per_node):
     results = []
     for sweep, grid, fixed_n, fixed_d in (
-        ("n", (250, 500, 1000, 2000, 4000), None, 7),
-        ("d", (4, 6, 8, 10), 1000, None),
+        ("n", (100, 250, 500, 1000, 1500), None, 7),
+        ("d", (4, 6, 8, 10, 12), 1000, None),
     ):
         for value in grid:
-            for repetition in range(10):
+            for run in range(n_runs):
                 data, weights = gen_laplace(
                     fixed_n or value,
                     fixed_d or value,
-                    0.4,
+                    edges_per_node,
                     graph_type=graph_type,
                 )
-                results.extend(
-                    {"Sweep": sweep, "Value": value, **result}
-                    for result in fit(data, weights, repetition)
-                )
+                for name, factory in MODELS.items():
+                    model = (
+                        factory(random_state=run)
+                        if "ICA" in name or "Direct" in name
+                        else factory()
+                    )
+                    model.fit(data)
+                    results.append(
+                        {
+                            "Sweep": sweep,
+                            "Value": value,
+                            "Method": name,
+                            "Disorder": disorder(model.causal_order_, weights),
+                        }
+                    )
 
     return pd.DataFrame(results)
 
 
-def heterogeneity_results(graph_type):
+def heterogeneity_results(graph_type, edges_per_node):
     results = []
     for maximum_df in (3, 5, 10, 20, 40):
-        for repetition in range(12):
+        for run in range(n_runs):
             data, weights = gen_t(
                 3000,
                 8,
-                0.4,
+                edges_per_node,
                 np.linspace(3, maximum_df, 8),
                 graph_type=graph_type,
             )
-            results.extend(
-                {"Value": maximum_df, **result}
-                for result in fit(data, weights, repetition)
-            )
+            for name, factory in MODELS.items():
+                model = (
+                    factory(random_state=run)
+                    if "ICA" in name or "Direct" in name
+                    else factory()
+                )
+                model.fit(data)
+                results.append(
+                    {
+                        "Value": maximum_df,
+                        "Method": name,
+                        "Disorder": disorder(model.causal_order_, weights),
+                    }
+                )
 
     return pd.DataFrame(results)
 
 
-def plot_row(axes, results, xlabel):
-    for axis, metric in zip(axes, METRICS, strict=True):
-        sns.lineplot(
-            data=results,
-            x="Value",
-            y=metric,
-            hue="Method",
-            marker="o",
-            errorbar="sd",
-            ax=axis,
-            legend=metric == "Disorder",
-        )
-        axis.set(xlabel=xlabel, ylabel=metric, title=metric)
-        if metric == "Disorder":
-            axis.legend(loc="upper left")
-        axis.grid(alpha=0.3)
+def plot(axis, results, xlabel, title, legend):
+    sns.lineplot(
+        data=results,
+        x="Value",
+        y="Disorder",
+        hue="Method",
+        marker="o",
+        errorbar="sd",
+        ax=axis,
+        legend=legend,
+    )
+    axis.set(xlabel=xlabel, ylabel="Disorder", title=title)
+    if legend:
+        axis.legend(loc="upper left")
+    axis.grid(alpha=0.3)
 
 
 parser = argparse.ArgumentParser()
 mode = parser.add_mutually_exclusive_group(required=True)
 mode.add_argument("--nd", action="store_true")
 mode.add_argument("--heterogeneity", action="store_true")
-graph = parser.add_mutually_exclusive_group(required=True)
-graph.add_argument("--er", action="store_const", const="er", dest="graph_type")
-graph.add_argument("--sf", action="store_const", const="sf", dest="graph_type")
 args = parser.parse_args()
-graph_title = {
-    "er": "Erdös–Rényi",
-    "sf": "Scale-free",
-}[args.graph_type]
 
 if args.nd:
-    results = nd_results(args.graph_type)
-    figure, axes = plt.subplots(2, 3, figsize=(24, 10), layout="constrained")
-    figure.suptitle(graph_title)
-    for row, (sweep, xlabel) in enumerate(
-        (("n", "n (sample size), d = 7"), ("d", "d (dimension), n = 1000"))
-    ):
-        plot_row(axes[row], results[results["Sweep"] == sweep], xlabel)
-    output = f"../figures/varying-nd-{args.graph_type}.pdf"
+    figure, axes = plt.subplots(2, 4, figsize=(28, 10), layout="constrained")
+    figure.suptitle("Disorder with varying sample size and dimension")
+    for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
+        results = nd_results(graph_type, edges_per_node)
+        graph_title = f"{graph_type}{edges_per_node}".upper()
+        for row, (sweep, xlabel) in enumerate(
+            (("n", "n (sample size), d = 7"), ("d", "d (dimension), n = 1000"))
+        ):
+            plot(
+                axes[row, column],
+                results[results["Sweep"] == sweep],
+                xlabel,
+                graph_title,
+                row == 0 and column == 0,
+            )
+    output = "../figures/varying-nd-disorder.pdf"
 else:
-    results = heterogeneity_results(args.graph_type)
-    figure, axes = plt.subplots(1, 3, figsize=(24, 5), layout="constrained")
-    figure.suptitle(f"Noise heterogeneity: {graph_title}")
-    plot_row(axes, results, "Maximum degrees of freedom")
-    output = f"../figures/noise-heterogeneity-{args.graph_type}.pdf"
+    figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
+    figure.suptitle("Disorder under noise heterogeneity")
+    for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
+        results = heterogeneity_results(graph_type, edges_per_node)
+        graph_title = f"{graph_type}{edges_per_node}".upper()
+        plot(
+            axes[column],
+            results,
+            "Maximum degrees of freedom",
+            graph_title,
+            column == 0,
+        )
+    output = "../figures/noise-heterogeneity-disorder.pdf"
 
 figure.savefig(output)
 plt.show()

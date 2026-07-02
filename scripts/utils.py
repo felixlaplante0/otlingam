@@ -5,7 +5,7 @@ from scipy.stats import t
 
 def _gen_dag(
     d: int,
-    edge_probability: float,
+    edges_per_node: int,
     noise: np.ndarray,
     graph_type: str,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -13,7 +13,11 @@ def _gen_dag(
 
     Args:
         d (int): Number of variables.
-        edge_probability (float): Probability of each admissible directed edge.
+        edges_per_node (int): Target number of edges per node. For an
+            Erd\"os--R\'enyi graph, the expected total number of edges is
+            `edges_per_node * d`, subject to the maximum number of DAG edges.
+            For a scale-free graph, this is the Barab\'asi--Albert attachment
+            parameter, capped at `d - 1`.
         noise (np.ndarray): Independent noise with shape `(n, d)`.
         graph_type (str): Random graph family. `er` denotes an Erdos--Renyi graph
             and `sf` denotes a scale-free graph.
@@ -24,11 +28,11 @@ def _gen_dag(
     weights = np.random.uniform(0.5, 2, (d, d)) * np.random.choice((-1, 1), (d, d))
 
     if graph_type == "er":
+        edge_probability = min(2 * edges_per_node / max(d - 1, 1), 1.0)
         adjacency = np.tril(np.random.random((d, d)) < edge_probability, k=-1)
-    elif graph_type == "sf":
+    else:
         adjacency = np.zeros((d, d), dtype=bool)
-        if d > 1 and edge_probability > 0:
-            edges_per_node = max(1, round(edge_probability * (d - 1) / 2))
+        if d > 1:
             graph = nx.barabasi_albert_graph(
                 d,
                 min(edges_per_node, d - 1),
@@ -36,8 +40,6 @@ def _gen_dag(
             )
             for parent, child in graph.edges:
                 adjacency[max(parent, child), min(parent, child)] = True
-    else:
-        raise ValueError("graph_type must be either 'er' or 'sf'.")
 
     weights *= adjacency
     permutation = np.random.permutation(d)
@@ -48,7 +50,7 @@ def _gen_dag(
 def gen_laplace(
     n: int,
     d: int,
-    edge_probability: float,
+    edges_per_node: int,
     *,
     graph_type: str = "er",
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -57,19 +59,19 @@ def gen_laplace(
     Args:
         n (int): Number of observations.
         d (int): Number of variables.
-        edge_probability (float): Probability of each admissible directed edge.
+        edges_per_node (int): Target number of edges per node.
         graph_type (str, optional): Random graph family. Defaults to `er`.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Observations and weighted adjacency matrix.
     """
-    return _gen_dag(d, edge_probability, np.random.laplace(size=(n, d)), graph_type)
+    return _gen_dag(d, edges_per_node, np.random.laplace(size=(n, d)), graph_type)
 
 
 def gen_t(
     n: int,
     d: int,
-    edge_probability: float,
+    edges_per_node: int,
     dfs: np.typing.ArrayLike,
     *,
     graph_type: str = "er",
@@ -79,7 +81,7 @@ def gen_t(
     Args:
         n (int): Number of observations.
         d (int): Number of variables.
-        edge_probability (float): Probability of each admissible directed edge.
+        edges_per_node (int): Target number of edges per node.
         dfs (np.typing.ArrayLike): Degrees of freedom for the variables.
         graph_type (str, optional): Random graph family. Defaults to `er`.
 
@@ -90,9 +92,8 @@ def gen_t(
         ValueError: If `dfs` does not contain one value greater than two per variable.
     """
     dfs = np.asarray(dfs)
-    if dfs.shape != (d,) or np.any(dfs <= 2):
-        raise ValueError("dfs must contain one value greater than two per variable.")
     noise = np.column_stack(
         [t.rvs(df, size=n) / np.sqrt(df / (df - 2)) for df in dfs]
     )
-    return _gen_dag(d, edge_probability, noise, graph_type)
+
+    return _gen_dag(d, edges_per_node, noise, graph_type)
