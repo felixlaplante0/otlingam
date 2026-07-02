@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 
 from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM
-from utils import gen_laplace
+from utils import DAGMA, gen_laplace
 
 # Set plot parameters
 plt.rcParams.update(
@@ -28,9 +28,10 @@ MODELS = {
     "OT ICA-LiNGAM": ICALiNGAM,
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
+    "DAGMA": DAGMA,
 }
 n_runs = 10
-np.random.seed(0)
+np.random.seed(42)
 
 # Warmup run to avoid including compilation time in the timing results
 warmup_data, _ = gen_laplace(250, 7, 2, graph_type="er")
@@ -82,7 +83,9 @@ for axis, (sweep, xlabel, title) in zip(
         x="Value",
         y="Runtime (seconds)",
         hue="Method",
-        marker="o",
+        style="Method",
+        markers=True,
+        dashes=False,
         errorbar="sd",
         ax=axis,
     )

@@ -9,7 +9,7 @@ import seaborn as sns
 from sklearn.exceptions import ConvergenceWarning
 
 from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM, disorder
-from utils import gen_laplace, gen_t
+from utils import DAGMA, gen_laplace, gen_t
 
 # Set plot parameters
 plt.rcParams.update(
@@ -33,10 +33,11 @@ MODELS = {
     "OT ICA-LiNGAM": ICALiNGAM,
     "ICA-LiNGAM": lingam.ICALiNGAM,
     "DirectLiNGAM": lingam.DirectLiNGAM,
+    "DAGMA": DAGMA,
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
-n_runs = 20
-np.random.seed(0)
+n_runs = 5
+np.random.seed(42)
 
 
 def nd_results(graph_type, edges_per_node):
@@ -74,13 +75,13 @@ def nd_results(graph_type, edges_per_node):
 
 def heterogeneity_results(graph_type, edges_per_node):
     results = []
-    for maximum_df in (3, 5, 10, 20, 40):
+    for maximum_df in (2.5, 5, 10, 20, 40):
         for run in range(n_runs):
             data, weights = gen_t(
                 3000,
                 8,
                 edges_per_node,
-                np.linspace(3, maximum_df, 8),
+                np.linspace(2.5, maximum_df, 8),
                 graph_type=graph_type,
             )
             for name, factory in MODELS.items():
@@ -107,7 +108,9 @@ def plot(axis, results, xlabel, title, legend):
         x="Value",
         y="Disorder",
         hue="Method",
-        marker="o",
+        style="Method",
+        markers=True,
+        dashes=False,
         errorbar="sd",
         ax=axis,
         legend=legend,
