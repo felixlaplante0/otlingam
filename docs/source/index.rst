@@ -64,7 +64,6 @@ The following example simulates a linear non-Gaussian structural equation model,
 
    import matplotlib.pyplot as plt
    import numpy as np
-
    from otlingam import GreedyLiNGAM, disorder
 
    rng = np.random.default_rng(42)
