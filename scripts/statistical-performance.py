@@ -36,7 +36,7 @@ MODELS = {
     "DAGMA": DAGMA,
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
-n_runs = 5
+n_runs = 20
 np.random.seed(42)
 
 
