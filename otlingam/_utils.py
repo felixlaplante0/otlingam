@@ -46,12 +46,12 @@ def disorder(
 ) -> int:
     r"""Counts true edges reversed by a causal order.
 
-    Let :math:`\hat{\pi}` be the estimated order. The disorder is given by
+    Let :math:`\hat{\sigma}` be the estimated order. The disorder is given by
 
     .. math::
 
-        \mathrm{dis}(\hat\pi) = \#\left\{ (k, j) : B^\star_{jk} \neq 0 \text{ and }
-        \hat{\pi}^{-1}(k) > \hat{\pi}^{-1}(j) \right\}
+        \mathrm{dis}(\hat{\sigma}) = \#\left\{ (k, j) : B^\star_{jk} \neq 0 \text{ and }
+        \hat{\sigma}^{-1}(k) > \hat{\sigma}^{-1}(j) \right\}
 
     It is zero exactly when `causal_order` is a topological order of the true DAG.
 
