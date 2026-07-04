@@ -6,9 +6,9 @@ Optimal Transport LiNGAM
 Features
 --------
 
-- **Exhaustive causal-order learning**: ``ExhaustiveLiNGAM`` uses subset dynamic programming to find a globally optimal order.
-- **Scalable greedy learning**: ``GreedyLiNGAM`` constructs an order by sequentially selecting the most non-Gaussian residual.
-- **Optimal transport ICA**: ``ICALiNGAM`` uses ``OTICA`` with FastICA initialization in the classical ICA-LiNGAM pipeline.
+- **Exhaustive causal-order learning**: ``ExhaustiveOTLiNGAM`` uses subset dynamic programming to find a globally optimal order.
+- **Scalable greedy learning**: ``GreedyOTLiNGAM`` constructs an order by sequentially selecting the most non-Gaussian residual.
+- **Optimal transport ICA**: ``OTICALiNGAM`` uses ``OTICA`` with FastICA initialization in the classical ICA-LiNGAM pipeline.
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
 
@@ -40,11 +40,11 @@ At the population level, the maximizers of :math:`G` are exactly the topological
 Algorithms
 ----------
 
-``ExhaustiveLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:`d 2^{d - 1}` local scores and stores :math:`O(2^d)` states, so its exponential dependence on :math:`d` limits it to smaller systems.
+``ExhaustiveOTLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:`d 2^{d - 1}` local scores and stores :math:`O(2^d)` states, so its exponential dependence on :math:`d` limits it to smaller systems.
 
-``GreedyLiNGAM`` repeatedly selects the most non-Gaussian standardized residual, removes its linear effect from the remaining variables, and continues on the residualized system. This avoids subset enumeration and provides a quadratic-time order procedure.
+``GreedyOTLiNGAM`` repeatedly selects the most non-Gaussian standardized residual, removes its linear effect from the remaining variables, and continues on the residualized system. This avoids subset enumeration and provides a quadratic-time order procedure.
 
-``ICALiNGAM`` estimates an unmixing matrix with ``OTICA`` using FastICA initialization, then applies the standard ICA-LiNGAM permutation, scaling, and adjacency estimation steps.
+``OTICALiNGAM`` estimates an unmixing matrix with ``OTICA`` using FastICA initialization, then applies the standard ICA-LiNGAM permutation, scaling, and adjacency estimation steps.
 
 Installation
 ------------
@@ -58,13 +58,13 @@ Install the package from PyPI:
 Usage
 -----
 
-The following example simulates a linear non-Gaussian structural equation model, learns a causal order with ``GreedyLiNGAM``, and compares the true and estimated weighted adjacency matrices.
+The following example simulates a linear non-Gaussian structural equation model, learns a causal order with ``GreedyOTLiNGAM``, and compares the true and estimated weighted adjacency matrices.
 
 .. code-block:: python
 
    import matplotlib.pyplot as plt
    import numpy as np
-   from otlingam import GreedyLiNGAM, disorder
+   from otlingam import GreedyOTLiNGAM, disorder
 
    rng = np.random.default_rng(42)
    n_samples = 5_000
@@ -80,7 +80,7 @@ The following example simulates a linear non-Gaussian structural equation model,
    noise = rng.uniform(-1.0, 1.0, size=(n_samples, 5))
    X = noise @ np.linalg.inv(np.eye(5) - adjacency_matrix).T
 
-   model = GreedyLiNGAM().fit(X)
+   model = GreedyOTLiNGAM().fit(X)
 
    print("Estimated causal order:", model.causal_order_)
    print("Disorder:", disorder(model.causal_order_, adjacency_matrix))
@@ -100,22 +100,22 @@ The following example simulates a linear non-Gaussian structural equation model,
 Configuration
 -------------
 
-``ExhaustiveLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
+``ExhaustiveOTLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyOTLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
 
 Fitted estimators expose ``causal_order_`` from source to sink, ``adjacency_matrix_`` with entry :math:`(j, k)` representing the effect :math:`k \to j`, ``score_`` for score-based estimators, and ``intercept_`` when intercept fitting is enabled.
 
 API Reference
 -------------
 
-.. autoclass:: otlingam.ExhaustiveLiNGAM
+.. autoclass:: otlingam.ExhaustiveOTLiNGAM
    :members:
    :show-inheritance:
 
-.. autoclass:: otlingam.GreedyLiNGAM
+.. autoclass:: otlingam.GreedyOTLiNGAM
    :members:
    :show-inheritance:
 
-.. autoclass:: otlingam.ICALiNGAM
+.. autoclass:: otlingam.ICAiNGAM
    :members:
    :show-inheritance:
 

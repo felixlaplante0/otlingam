@@ -1,8 +1,8 @@
 """Optimal transport-based causal discovery."""
 
-from ._exhaustive import ExhaustiveLiNGAM
-from ._greedy import GreedyLiNGAM
-from ._ica import ICALiNGAM
+from ._exhaustive import ExhaustiveOTLiNGAM
+from ._greedy import GreedyOTLiNGAM
+from ._ica import OTICALiNGAM
 from ._utils import disorder
 
-__all__ = ["ExhaustiveLiNGAM", "GreedyLiNGAM", "ICALiNGAM", "disorder"]
+__all__ = ["ExhaustiveOTLiNGAM", "GreedyOTLiNGAM", "OTICALiNGAM", "disorder"]

@@ -1,13 +1,13 @@
 from typing import Self, cast
 
 import numpy as np
-from lingam import ICALiNGAM as BaseICALiNGAM
+from lingam import OTICALiNGAM as BaseOTICALiNGAM
 from otica import OTICA
 from scipy.optimize import linear_sum_assignment  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 
-class ICALiNGAM(BaseICALiNGAM):
+class OTICALiNGAM(BaseOTICALiNGAM):
     """ICA-based LiNGAM using optimal transport ICA.
 
     This estimator learns a directed acyclic graph by estimating an unmixing matrix
@@ -29,8 +29,8 @@ class ICALiNGAM(BaseICALiNGAM):
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
 
     Examples:
-        >>> from otlingam import ICALiNGAM
-        >>> model = ICALiNGAM(random_state=0, max_iter=1000)
+        >>> from otlingam import OTICALiNGAM
+        >>> model = OTICALiNGAM(random_state=0, max_iter=1000)
         >>> model.fit(X)
         >>> model.causal_order_
     """

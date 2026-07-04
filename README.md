@@ -6,9 +6,9 @@
 
 ## ✨ Features
 
-- **Exhaustive causal-order learning**: `ExhaustiveLiNGAM` uses subset dynamic programming to find a globally optimal order.
-- **Scalable greedy learning**: `GreedyLiNGAM` constructs an order by sequentially selecting the most non-Gaussian residual.
-- **Optimal transport ICA**: `ICALiNGAM` uses `OTICA` with FastICA initialization in the classical ICA-LiNGAM pipeline.
+- **Exhaustive causal-order learning**: `ExhaustiveOTLiNGAM` uses subset dynamic programming to find a globally optimal order.
+- **Scalable greedy learning**: `GreedyOTLiNGAM` constructs an order by sequentially selecting the most non-Gaussian residual.
+- **Optimal transport ICA**: `OTICALiNGAM` uses `OTICA` with FastICA initialization in the classical ICA-LiNGAM pipeline.
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
 
@@ -50,12 +50,12 @@ pip install otlingam
 
 ### Example
 
-The following example simulates a linear non-Gaussian structural equation model, learns a causal order with `GreedyLiNGAM`, and compares the true and estimated weighted adjacency matrices.
+The following example simulates a linear non-Gaussian structural equation model, learns a causal order with `GreedyOTLiNGAM`, and compares the true and estimated weighted adjacency matrices.
 
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
-from otlingam import GreedyLiNGAM, disorder
+from otlingam import GreedyOTLiNGAM, disorder
 
 rng = np.random.default_rng(42)
 n_samples = 5_000
@@ -71,7 +71,7 @@ adjacency_matrix = np.array(
 noise = rng.uniform(-1.0, 1.0, size=(n_samples, 5))
 X = noise @ np.linalg.inv(np.eye(5) - adjacency_matrix).T
 
-model = GreedyLiNGAM().fit(X)
+model = GreedyOTLiNGAM().fit(X)
 
 print("Estimated causal order:", model.causal_order_)
 print("Disorder:", disorder(model.causal_order_, adjacency_matrix))
@@ -89,7 +89,7 @@ fig.colorbar(image, ax=axes, label="Edge weight")
 plt.show()
 ```
 
-`ExhaustiveLiNGAM` provides global order optimization at an exponential cost in the number of variables. `GreedyLiNGAM` provides a quadratic-time alternative. Set `fit_intercept=False` when the observations are already centered. The default `fit_intercept=True` centers the data and exposes the fitted intercepts through `intercept_`.
+`ExhaustiveOTLiNGAM` provides global order optimization at an exponential cost in the number of variables. `GreedyOTLiNGAM` provides a quadratic-time alternative. Set `fit_intercept=False` when the observations are already centered. The default `fit_intercept=True` centers the data and exposes the fitted intercepts through `intercept_`.
 
 ---
 

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM
+from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
 from utils import DAGMA, gen_laplace
 
 # Set plot parameters
@@ -23,11 +23,11 @@ plt.rcParams.update(
 
 # Set defaults
 MODELS = {
-    "ExhaustiveLiNGAM": ExhaustiveLiNGAM,
-    "GreedyLiNGAM": GreedyLiNGAM,
-    "OT ICA-LiNGAM": ICALiNGAM,
-    "ICA-LiNGAM": lingam.ICALiNGAM,
-    "DirectLiNGAM": lingam.DirectLiNGAM,
+    "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
+    "Greedy LO-LiNGAM": GreedyOTLiNGAM,
+    "OT-ICA-LiNGAM": OTICALiNGAM,
+    "ICA-LiNGAM": lingam.ICAiNGAM,
+    "Direct-LiNGAM": lingam.DirectLiNGAM,
     "DAGMA": DAGMA,
 }
 n_runs = 10
@@ -35,7 +35,7 @@ np.random.seed(42)
 
 # Warmup run to avoid including compilation time in the timing results
 warmup_data, _ = gen_laplace(250, 7, 2, graph_type="er")
-ExhaustiveLiNGAM().fit(warmup_data)
+ExhaustiveOTLiNGAM().fit(warmup_data)
 
 results = []
 for sweep, grid, fixed_n, fixed_d in (
@@ -51,7 +51,7 @@ for sweep, grid, fixed_n, fixed_d in (
                 graph_type="er",
             )
             for name, factory in MODELS.items():
-                if fixed_d is None and value > 12 and name == "ExhaustiveLiNGAM":
+                if fixed_d is None and value > 12 and name == "ExhaustiveOTLiNGAM":
                     continue
                 model = (
                     factory(random_state=run)

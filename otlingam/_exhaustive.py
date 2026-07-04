@@ -217,7 +217,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveLiNGAM(_BaseLiNGAM):
+class ExhaustiveOTLiNGAM(_BaseLiNGAM):
     """Exhaustive score-based causal discovery via subset dynamic programming.
 
     This estimator learns a directed acyclic graph by finding the causal ordering that
@@ -246,8 +246,8 @@ class ExhaustiveLiNGAM(_BaseLiNGAM):
         score_ (float): Squared Wasserstein distance-based score of the learned DAG.
 
     Examples:
-        >>> from otlingam import ExhaustiveLiNGAM
-        >>> model = ExhaustiveLiNGAM(fit_intercept=True)
+        >>> from otlingam import ExhaustiveOTLiNGAM
+        >>> model = ExhaustiveOTLiNGAM(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_
     """
@@ -258,7 +258,7 @@ class ExhaustiveLiNGAM(_BaseLiNGAM):
 
     @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
     def __init__(self, fit_intercept: bool = True) -> None:
-        """Initializes ExhaustiveLiNGAM.
+        """Initializes ExhaustiveOTLiNGAM.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
@@ -272,14 +272,14 @@ class ExhaustiveLiNGAM(_BaseLiNGAM):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
-        """Fits the ExhaustiveLiNGAM algorithm.
+        """Fits the ExhaustiveOTLiNGAM algorithm.
 
         Args:
             X (np.typing.ArrayLike): Input data.
             y (None, optional): Ignored. Defaults to None.
 
         Returns:
-            ExhaustiveLiNGAM: The fitted estimator.
+            ExhaustiveOTLiNGAM: The fitted estimator.
         """
         X = cast(
             np.ndarray,

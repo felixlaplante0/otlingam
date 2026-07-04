@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn.exceptions import ConvergenceWarning
 
-from otlingam import ExhaustiveLiNGAM, GreedyLiNGAM, ICALiNGAM, disorder
+from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM, disorder
 from utils import DAGMA, gen_laplace, gen_t
 
 # Set plot parameters
@@ -28,11 +28,11 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 # Set defaults
 MODELS = {
-    "ExhaustiveLiNGAM": ExhaustiveLiNGAM,
-    "GreedyLiNGAM": GreedyLiNGAM,
-    "OT ICA-LiNGAM": ICALiNGAM,
-    "ICA-LiNGAM": lingam.ICALiNGAM,
-    "DirectLiNGAM": lingam.DirectLiNGAM,
+    "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
+    "Greedy OT-LiNGAM": GreedyOTLiNGAM,
+    "OT-ICA-LiNGAM": OTICALiNGAM,
+    "ICA-LiNGAM": lingam.ICAiNGAM,
+    "Direct-LiNGAM": lingam.DirectLiNGAM,
     "DAGMA": DAGMA,
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))

@@ -8,7 +8,7 @@ from sklearn.utils.validation import validate_data  # type: ignore
 from ._utils import gauss_quantiles, recover_weights
 
 
-class GreedyLiNGAM(_BaseLiNGAM):
+class GreedyOTLiNGAM(_BaseLiNGAM):
     """Greedy score-based causal discovery by sequential source removal.
 
     This estimator repeatedly selects the most non-Gaussian standardized residual as
@@ -33,8 +33,8 @@ class GreedyLiNGAM(_BaseLiNGAM):
         score_ (float): Sum of the selected squared Wasserstein scores.
 
     Examples:
-        >>> from otlingam import GreedyLiNGAM
-        >>> model = GreedyLiNGAM(fit_intercept=True)
+        >>> from otlingam import GreedyOTLiNGAM
+        >>> model = GreedyOTLiNGAM(fit_intercept=True)
         >>> model.fit(X)
         >>> model.causal_order_
     """
@@ -45,7 +45,7 @@ class GreedyLiNGAM(_BaseLiNGAM):
 
     @validate_params({"fit_intercept": [bool]}, prefer_skip_nested_validation=True)
     def __init__(self, fit_intercept: bool = True) -> None:
-        """Initializes GreedyLiNGAM.
+        """Initializes GreedyOTLiNGAM.
 
         Args:
             fit_intercept (bool, optional): Whether to center the data. Defaults to
@@ -59,14 +59,14 @@ class GreedyLiNGAM(_BaseLiNGAM):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
-        """Fits the GreedyLiNGAM algorithm.
+        """Fits the GreedyOTLiNGAM algorithm.
 
         Args:
             X (np.typing.ArrayLike): Input data.
             y (None, optional): Ignored. Defaults to None.
 
         Returns:
-            GreedyLiNGAM: The fitted estimator.
+            GreedyOTLiNGAM: The fitted estimator.
 
         Raises:
             ValueError: If a residual has zero variance.
