@@ -1,13 +1,13 @@
 import time
 
-import lingam
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from lingam import DirectLiNGAM, ICALiNGAM
+from utils import DAGMA, gen_laplace
 
 from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
-from utils import DAGMA, gen_laplace
 
 # Set plot parameters
 plt.rcParams.update(
@@ -26,8 +26,8 @@ MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy LO-LiNGAM": GreedyOTLiNGAM,
     "OT-ICA-LiNGAM": OTICALiNGAM,
-    "ICA-LiNGAM": lingam.ICAiNGAM,
-    "Direct-LiNGAM": lingam.DirectLiNGAM,
+    "ICA-LiNGAM": ICALiNGAM,
+    "Direct-LiNGAM": DirectLiNGAM,
     "DAGMA": DAGMA,
 }
 n_runs = 10

@@ -1,15 +1,15 @@
 import argparse
 import warnings
 
-import lingam
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from lingam import DirectLiNGAM, ICALiNGAM
 from sklearn.exceptions import ConvergenceWarning
+from utils import DAGMA, gen_laplace, gen_t
 
 from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM, disorder
-from utils import DAGMA, gen_laplace, gen_t
 
 # Set plot parameters
 plt.rcParams.update(
@@ -31,8 +31,8 @@ MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy OT-LiNGAM": GreedyOTLiNGAM,
     "OT-ICA-LiNGAM": OTICALiNGAM,
-    "ICA-LiNGAM": lingam.ICAiNGAM,
-    "Direct-LiNGAM": lingam.DirectLiNGAM,
+    "ICA-LiNGAM": ICALiNGAM,
+    "Direct-LiNGAM": DirectLiNGAM,
     "DAGMA": DAGMA,
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
