@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,6 +24,7 @@ plt.rcParams.update(
 
 # Set defaults
 np.random.seed(42)
+ROOT = Path(__file__).resolve().parents[1]
 MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy LO-LiNGAM": GreedyOTLiNGAM,
@@ -91,5 +93,5 @@ for axis, (sweep, xlabel, title) in zip(
     axis.legend(loc="upper left")
     axis.set_yscale("log")
     axis.grid(alpha=0.3)
-figure.savefig("../figures/runtime-scaling.pdf")
+figure.savefig(ROOT / "figures" / "runtime-scaling.pdf")
 plt.show()

@@ -1,5 +1,6 @@
 import argparse
 import warnings
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,6 +29,7 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 # Set defaults
 np.random.seed(42)
+ROOT = Path(__file__).resolve().parents[1]
 MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy OT-LiNGAM": GreedyOTLiNGAM,
@@ -143,7 +145,7 @@ if args.nd:
                 graph_title,
                 row == 0 and column == 0,
             )
-    output = "../figures/varying-nd-disorder.pdf"
+    output = ROOT / "figures" / "varying-nd-disorder.pdf"
 else:
     figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
     figure.suptitle("Disorder under noise heterogeneity")
@@ -157,7 +159,7 @@ else:
             graph_title,
             column == 0,
         )
-    output = "../figures/noise-heterogeneity-disorder.pdf"
+    output = ROOT / "figures" / "noise-heterogeneity-disorder.pdf"
 
 figure.savefig(output)
 plt.show()
