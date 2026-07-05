@@ -227,7 +227,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM):
     The optimal ordering is found exhaustively using subset dynamic programming.
     Regression residuals are standardized and compared with standard normal quantiles
     to compute the score. Once the ordering is recovered, edge weights are estimated
-    using adaptive lasso regression.
+    using adaptive Lasso regression.
 
     Data preprocessing settings:
         - `fit_intercept`: Whether to center the data before fitting. Centering also
