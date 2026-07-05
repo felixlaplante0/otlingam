@@ -27,6 +27,7 @@ plt.rcParams.update(
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 # Set defaults
+np.random.seed(42)
 MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy OT-LiNGAM": GreedyOTLiNGAM,
@@ -36,8 +37,7 @@ MODELS = {
     "DAGMA": DAGMA,
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
-n_runs = 20
-np.random.seed(42)
+N_RUNS = 20
 
 
 def nd_results(graph_type, edges_per_node):
@@ -47,7 +47,7 @@ def nd_results(graph_type, edges_per_node):
         ("d", (4, 6, 8, 10, 12), 1000, None),
     ):
         for value in grid:
-            for run in range(n_runs):
+            for run in range(N_RUNS):
                 data, weights = gen_laplace(
                     fixed_n or value,
                     fixed_d or value,
@@ -76,7 +76,7 @@ def nd_results(graph_type, edges_per_node):
 def heterogeneity_results(graph_type, edges_per_node):
     results = []
     for maximum_df in (2.5, 5, 10, 20, 40):
-        for run in range(n_runs):
+        for run in range(N_RUNS):
             data, weights = gen_t(
                 3000,
                 8,

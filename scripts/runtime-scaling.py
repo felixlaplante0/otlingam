@@ -22,6 +22,7 @@ plt.rcParams.update(
 )
 
 # Set defaults
+np.random.seed(42)
 MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy LO-LiNGAM": GreedyOTLiNGAM,
@@ -30,8 +31,7 @@ MODELS = {
     "Direct-LiNGAM": DirectLiNGAM,
     "DAGMA": DAGMA,
 }
-n_runs = 10
-np.random.seed(42)
+N_RUNS = 10
 
 # Warmup run to avoid including compilation time in the timing results
 warmup_data, _ = gen_laplace(250, 7, 2, graph_type="er")
@@ -43,7 +43,7 @@ for sweep, grid, fixed_n, fixed_d in (
     ("d", (6, 8, 10, 12, 16, 20), 1000, None),
 ):
     for value in grid:
-        for run in range(n_runs):
+        for run in range(N_RUNS):
             data, _ = gen_laplace(
                 fixed_n or value,
                 fixed_d or value,
