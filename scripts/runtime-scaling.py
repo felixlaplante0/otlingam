@@ -51,8 +51,6 @@ for sweep, grid, fixed_n, fixed_d in (
                 graph_type="er",
             )
             for name, factory in MODELS.items():
-                if fixed_d is None and value > 12 and name == "ExhaustiveOTLiNGAM":
-                    continue
                 model = (
                     factory(random_state=run)
                     if "ICA" in name or "Direct" in name
