@@ -27,6 +27,7 @@ class OTICALiNGAM(ICALiNGAM):
             None before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
+        intercept_ (np.ndarray): Intercepts of the structural equations.
 
     Examples:
         >>> from otlingam import OTICALiNGAM
@@ -34,6 +35,8 @@ class OTICALiNGAM(ICALiNGAM):
         >>> model.fit(X)
         >>> model.causal_order_
     """
+
+    intercept_: np.ndarray
 
     def fit(self, X: np.typing.ArrayLike) -> Self:
         """Fits the model to the observations.
@@ -64,5 +67,7 @@ class OTICALiNGAM(ICALiNGAM):
         B_estimate = np.eye(len(W_estimate)) - W_estimate
 
         self._causal_order = self._estimate_causal_order(B_estimate)
+        self._estimate_adjacency_matrix(X)
+        self.intercept_ = ica.mean_ - self._adjacency_matrix @ ica.mean_
 
-        return self._estimate_adjacency_matrix(X)
+        return self
