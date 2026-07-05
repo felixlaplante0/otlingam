@@ -14,7 +14,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM):
     This estimator repeatedly selects the most non-Gaussian standardized residual as
     the next source in the causal order. It then removes the source's linear effect
     from every remaining variable. Once the ordering is recovered, edge weights are
-    estimated using adaptive Lasso regression.
+    estimated using adaptive lasso regression.
 
     Data preprocessing settings:
         - `fit_intercept`: Whether to center the data before fitting. Centering also
@@ -116,5 +116,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM):
 
         if self.fit_intercept:
             self.intercept_ = shift - self._adjacency_matrix @ shift
+        else:
+            self.__dict__.pop("intercept_", None)
 
         return self
