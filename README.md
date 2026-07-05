@@ -27,13 +27,13 @@ where the graph is acyclic and the structural noises are mutually independent, c
 For a candidate order $\sigma$, let $R_j(\sigma)$ be the population residual obtained by regressing $X_j$ on its predecessors under $\sigma$. The oracle Wasserstein order objective is
 
 $$
-G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2(\mathrm{std}(R_j(\sigma)), \mathcal{N}(0, 1))^2.
+G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}(R_j(\sigma)), \mathcal{N}(0, 1) \right)^2.
 $$
 
 Given $n$ observations, let $\widehat{R}_j^{(i)}(\sigma)$ be the ordinary least-squares residual for observation $i$. OTLiNGAM maximizes the empirical order objective
 
 $$
-\widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2(\mathrm{std}(\frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)}), \mathcal{N}(0, 1))^2.
+\widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
 $$
 
 At the population level, the maximizers of $G$ are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
