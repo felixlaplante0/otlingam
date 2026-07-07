@@ -8,7 +8,7 @@ from otlingam import disorder
 from ._utils import linear_dag
 
 
-def test_disorder_counts_reversed_edges():
+def test_disorder_count():
     """Counts true edges that conflict with the supplied order."""
     _, adjacency_matrix = linear_dag()
 
@@ -16,7 +16,7 @@ def test_disorder_counts_reversed_edges():
     assert disorder([2, 1, 0], adjacency_matrix) == np.count_nonzero(adjacency_matrix)
 
 
-def test_disorder_validates_inputs():
+def test_disorder_validation():
     """Checks validation for non-square matrices and non-permutation orders."""
     with pytest.raises(ValueError, match="square array"):
         disorder([0, 1], np.ones((2, 3)))

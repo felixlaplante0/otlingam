@@ -16,7 +16,7 @@ from otlingam._utils import gauss_quantiles
 from ._utils import linear_dag
 
 
-def test_exhaustive_helpers_match_linear_regression_quantities():
+def test_regression_helpers():
     """Exercises exhaustive dynamic-programming helpers through Python tracing."""
     X, _ = linear_dag()
     X = X - X.mean(axis=0)
@@ -46,7 +46,7 @@ def test_exhaustive_helpers_match_linear_regression_quantities():
     assert np.allclose(residuals, expected_residuals)
 
 
-def test_exhaustive_score_and_sink_dp_return_finite_order():
+def test_sink_dp():
     """Exercises score and subset dynamic programming helpers."""
     X, _ = linear_dag()
     X = X - X.mean(axis=0)

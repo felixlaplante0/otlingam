@@ -13,6 +13,7 @@
 - **Optimal transport ICA**: `OTICALiNGAM` uses `OTICA` with FastICA initialization in the classical ICA-LiNGAM pipeline.
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
+- **scikit-learn integration**: Native `BaseEstimator` integration with familiar `fit`, `get_params`, `set_params`, and `clone` support.
 
 ---
 
