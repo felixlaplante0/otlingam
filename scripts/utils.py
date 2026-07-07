@@ -123,8 +123,9 @@ def gen_t(
     """
     dfs = np.asarray(dfs)
     scales = np.random.uniform(0.5, 2.0, size=d)
-    noise = np.column_stack(
-        [t.rvs(df, size=n) / np.sqrt(df / (df - 2)) for df in dfs]
-    ) * scales
+    noise = (
+        np.column_stack([t.rvs(df, size=n) / np.sqrt(df / (df - 2)) for df in dfs])
+        * scales
+    )
 
     return _gen_dag(d, edges_per_node, noise, graph_type)

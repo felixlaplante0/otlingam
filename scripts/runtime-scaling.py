@@ -34,64 +34,92 @@ MODELS = {
     "DAGMA": DAGMA,
 }
 N_RUNS = 10
+N_RANGE = (250, 500, 1000, 2000, 4000)
+D_RANGE = (6, 8, 10, 12, 16, 20)
+FIXED_N = 1000
+FIXED_D = 7
+EDGES_PER_NODE = 2
+GRAPH_TYPE = "er"
+WARMUP_N = 250
+WARMUP_D = 7
 
-# Warmup run to avoid including compilation time in the timing results
-warmup_data, _ = gen_laplace(250, 7, 2, graph_type="er")
-ExhaustiveOTLiNGAM().fit(warmup_data)
 
-results = []
-for sweep, grid, fixed_n, fixed_d in (
-    ("n", (250, 500, 1000, 2000, 4000), None, 7),
-    ("d", (6, 8, 10, 12, 16, 20), 1000, None),
-):
-    for value in grid:
-        for run in range(N_RUNS):
-            data, _ = gen_laplace(
-                fixed_n or value,
-                fixed_d or value,
-                2,
-                graph_type="er",
-            )
-            for name, factory in MODELS.items():
-                model = (
-                    factory(random_state=run)
-                    if "ICA" in name or "Direct" in name
-                    else factory()
-                )
-                start = time.perf_counter()
-                model.fit(data)
-                results.append(
-                    {
-                        "Sweep": sweep,
-                        "Value": value,
-                        "Method": name,
-                        "Runtime (seconds)": time.perf_counter() - start,
-                    }
-                )
-
-results = pd.DataFrame(results)
-figure, axes = plt.subplots(1, 2, figsize=(16, 5), layout="constrained")
-for axis, (sweep, xlabel, title) in zip(
-    axes,
-    (
-        ("n", "n (sample size), d = 7", "ER2 runtime scaling with sample size"),
-        ("d", "d (dimension), n = 1000", "ER2 runtime scaling with dimension"),
-    ),
-):
-    sns.lineplot(
-        data=results[results["Sweep"] == sweep],
-        x="Value",
-        y="Runtime (seconds)",
-        hue="Method",
-        style="Method",
-        markers=True,
-        dashes=False,
-        errorbar="sd",
-        ax=axis,
+def main():
+    # Warmup run to avoid including compilation time in the timing results
+    warmup_data, _ = gen_laplace(
+        WARMUP_N,
+        WARMUP_D,
+        EDGES_PER_NODE,
+        graph_type=GRAPH_TYPE,
     )
-    axis.set(xlabel=xlabel, ylabel="Runtime (seconds)", title=title)
-    axis.legend(loc="upper left")
-    axis.set_yscale("log")
-    axis.grid(alpha=0.3)
-figure.savefig(ROOT / "figures" / "runtime-scaling.pdf")
-plt.show()
+    ExhaustiveOTLiNGAM().fit(warmup_data)
+
+    results = []
+    for sweep, grid, fixed_n, fixed_d in (
+        ("n", N_RANGE, None, FIXED_D),
+        ("d", D_RANGE, FIXED_N, None),
+    ):
+        for value in grid:
+            for run in range(N_RUNS):
+                data, _ = gen_laplace(
+                    fixed_n or value,
+                    fixed_d or value,
+                    EDGES_PER_NODE,
+                    graph_type=GRAPH_TYPE,
+                )
+                for name, factory in MODELS.items():
+                    model = (
+                        factory(random_state=run)
+                        if "ICA" in name or "Direct" in name
+                        else factory()
+                    )
+                    start = time.perf_counter()
+                    model.fit(data)
+                    results.append(
+                        {
+                            "Sweep": sweep,
+                            "Value": value,
+                            "Method": name,
+                            "Runtime (seconds)": time.perf_counter() - start,
+                        }
+                    )
+
+    results = pd.DataFrame(results)
+    figure, axes = plt.subplots(1, 2, figsize=(16, 5), layout="constrained")
+    for axis, (sweep, xlabel, title) in zip(
+        axes,
+        (
+            (
+                "n",
+                f"n (sample size), d = {FIXED_D}",
+                f"{GRAPH_TYPE.upper()}{EDGES_PER_NODE} runtime scaling with sample size",
+            ),
+            (
+                "d",
+                f"d (dimension), n = {FIXED_N}",
+                f"{GRAPH_TYPE.upper()}{EDGES_PER_NODE} runtime scaling with dimension",
+            ),
+        ),
+    ):
+        sns.lineplot(
+            data=results[results["Sweep"] == sweep],
+            x="Value",
+            y="Runtime (seconds)",
+            hue="Method",
+            style="Method",
+            markers=True,
+            dashes=False,
+            errorbar="sd",
+            ax=axis,
+        )
+        axis.set(xlabel=xlabel, ylabel="Runtime (seconds)", title=title)
+        axis.legend(loc="upper left")
+        axis.set_yscale("log")
+        axis.grid(alpha=0.3)
+
+    figure.savefig(ROOT / "figures" / "runtime-scaling.pdf")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

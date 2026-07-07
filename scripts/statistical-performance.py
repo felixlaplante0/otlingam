@@ -40,13 +40,21 @@ MODELS = {
 }
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
 N_RUNS = 20
+N_RANGE = (100, 250, 500, 1000, 1500)
+D_RANGE = (4, 6, 8, 10, 12)
+FIXED_N = 1000
+FIXED_D = 7
+HETEROGENEITY_N = 3000
+HETEROGENEITY_D = 8
+MIN_DF = 2.5
+MAX_DF_RANGE = (2.5, 5, 10, 20, 40)
 
 
 def nd_results(graph_type, edges_per_node):
     results = []
     for sweep, grid, fixed_n, fixed_d in (
-        ("n", (100, 250, 500, 1000, 1500), None, 7),
-        ("d", (4, 6, 8, 10, 12), 1000, None),
+        ("n", N_RANGE, None, FIXED_D),
+        ("d", D_RANGE, FIXED_N, None),
     ):
         for value in grid:
             for run in range(N_RUNS):
@@ -77,13 +85,13 @@ def nd_results(graph_type, edges_per_node):
 
 def heterogeneity_results(graph_type, edges_per_node):
     results = []
-    for maximum_df in (2.5, 5, 10, 20, 40):
+    for maximum_df in MAX_DF_RANGE:
         for run in range(N_RUNS):
             data, weights = gen_t(
-                3000,
-                8,
+                HETEROGENEITY_N,
+                HETEROGENEITY_D,
                 edges_per_node,
-                np.linspace(2.5, maximum_df, 8),
+                np.linspace(MIN_DF, maximum_df, HETEROGENEITY_D),
                 graph_type=graph_type,
             )
             for name, factory in MODELS.items():
@@ -123,43 +131,51 @@ def plot(axis, results, xlabel, title, legend):
     axis.grid(alpha=0.3)
 
 
-parser = argparse.ArgumentParser()
-mode = parser.add_mutually_exclusive_group(required=True)
-mode.add_argument("--nd", action="store_true")
-mode.add_argument("--heterogeneity", action="store_true")
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser()
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--nd", action="store_true")
+    mode.add_argument("--heterogeneity", action="store_true")
+    args = parser.parse_args()
 
-if args.nd:
-    figure, axes = plt.subplots(2, 4, figsize=(28, 10), layout="constrained")
-    figure.suptitle("Disorder with varying sample size and dimension")
-    for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
-        results = nd_results(graph_type, edges_per_node)
-        graph_title = f"{graph_type}{edges_per_node}".upper()
-        for row, (sweep, xlabel) in enumerate(
-            (("n", "n (sample size), d = 7"), ("d", "d (dimension), n = 1000"))
-        ):
+    if args.nd:
+        figure, axes = plt.subplots(2, 4, figsize=(28, 10), layout="constrained")
+        figure.suptitle("Disorder with varying sample size and dimension")
+        for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
+            results = nd_results(graph_type, edges_per_node)
+            graph_title = f"{graph_type}{edges_per_node}".upper()
+            for row, (sweep, xlabel) in enumerate(
+                (
+                    ("n", f"n (sample size), d = {FIXED_D}"),
+                    ("d", f"d (dimension), n = {FIXED_N}"),
+                )
+            ):
+                plot(
+                    axes[row, column],
+                    results[results["Sweep"] == sweep],
+                    xlabel,
+                    graph_title,
+                    row == 0 and column == 0,
+                )
+        output = ROOT / "figures" / "varying-nd-disorder.pdf"
+    else:
+        figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
+        figure.suptitle("Disorder under noise heterogeneity")
+        for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
+            results = heterogeneity_results(graph_type, edges_per_node)
+            graph_title = f"{graph_type}{edges_per_node}".upper()
             plot(
-                axes[row, column],
-                results[results["Sweep"] == sweep],
-                xlabel,
+                axes[column],
+                results,
+                "Maximum degrees of freedom",
                 graph_title,
-                row == 0 and column == 0,
+                column == 0,
             )
-    output = ROOT / "figures" / "varying-nd-disorder.pdf"
-else:
-    figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
-    figure.suptitle("Disorder under noise heterogeneity")
-    for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
-        results = heterogeneity_results(graph_type, edges_per_node)
-        graph_title = f"{graph_type}{edges_per_node}".upper()
-        plot(
-            axes[column],
-            results,
-            "Maximum degrees of freedom",
-            graph_title,
-            column == 0,
-        )
-    output = ROOT / "figures" / "noise-heterogeneity-disorder.pdf"
+        output = ROOT / "figures" / "noise-heterogeneity-disorder.pdf"
 
-figure.savefig(output)
-plt.show()
+    figure.savefig(output)
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
