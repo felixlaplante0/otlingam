@@ -61,7 +61,7 @@ import numpy as np
 from otlingam import GreedyOTLiNGAM, disorder
 
 rng = np.random.default_rng(42)
-n_samples = 5_000
+n_samples = 5000
 adjacency_matrix = np.array(
     [
         [0.0, 0.0, 0.0, 0.0, 0.0],

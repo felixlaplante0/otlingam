@@ -1,122 +1,84 @@
-Optimal Transport LiNGAM
-========================
+PIT-CP
+======
 
-**otlingam** is a Python package for causal discovery in linear non-Gaussian structural equation models. It learns causal orders by maximizing the Wasserstein non-Gaussianity of standardized regression residuals and estimates edge weights with adaptive Lasso.
+**pitcp** is a Python package for conformal prediction using **probability integral transform (PIT) pivotal scores**. Given any black-box nonconformity score, it fits a conditional density estimator on the score distribution and maps raw scores to PIT values, yielding valid marginal coverage at any user-specified level.
 
 Features
 --------
 
-- **Exhaustive causal-order learning**: ``ExhaustiveOTLiNGAM`` uses subset dynamic programming to find a globally optimal order.
-- **Scalable greedy learning**: ``GreedyOTLiNGAM`` constructs an order by sequentially selecting the most non-Gaussian residual.
-- **Optimal transport ICA**: ``OTICALiNGAM`` uses ``OTICA`` with FastICA initialization in the classical ICA-LiNGAM pipeline.
-- **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
-- **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
-
-Method
-------
-
-The estimators assume the linear structural equation model
-
-.. math::
-
-   X_j = \sum_{k \in \operatorname{Pa}(j)} B_{jk} X_k + \varepsilon_j,
-
-where the graph is acyclic and the structural noises are mutually independent, centered, and have finite nonzero variances. Causal-order identification additionally requires at most one Gaussian structural noise.
-
-For a candidate order :math:`\sigma \in \mathfrak{S}_d`, let :math:`R_j(\sigma)` be the population residual obtained by regressing :math:`X_j` on its predecessors under :math:`\sigma`. The oracle Wasserstein order objective is
-
-.. math::
-
-   G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
-
-Given observations :math:`X^{(1)}, \ldots, X^{(n)}`, let :math:`\widehat{R}_j^{(i)}(\sigma)` be the ordinary least-squares residual for observation :math:`i`. OTLiNGAM maximizes the empirical order objective
-
-.. math::
-
-   \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
-
-At the population level, the maximizers of :math:`G` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
-
-Algorithms
-----------
-
-``ExhaustiveOTLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:`d 2^{d - 1}` local scores and stores :math:`O(2^d)` states, so its exponential dependence on :math:`d` limits it to smaller systems.
-
-``GreedyOTLiNGAM`` repeatedly selects the most non-Gaussian standardized residual, removes its linear effect from the remaining variables, and continues on the residualized system. This avoids subset enumeration and provides a quadratic-time order procedure.
-
-``OTICALiNGAM`` estimates an unmixing matrix with ``OTICA`` using FastICA initialization, then applies the standard ICA-LiNGAM permutation, scaling, and adjacency estimation steps.
+- **PIT Conformal Prediction**: Maps base nonconformity scores through a learned conditional CDF, producing asymptotically exact conditional coverage.
+- **Model-agnostic**: Works with any callable nonconformity score `s(x, y)`, including distance, residual, or likelihood-based scores.
+- **Flexible Density Estimation**: Supports normalizing flows and mixture density networks from the `zuko <https://github.com/probabilists/zuko>`_ library.
+- **Marginal Coverage Guarantee**: Provably valid conformal coverage at any target level via finite-sample calibration.
+- **scikit-learn**: Native `BaseEstimator` integration with a familiar `fit` / `conformalize` / `predict` API.
 
 Installation
 ------------
 
-Install the package from PyPI:
+You can install the package via pip:
 
 .. code-block:: bash
 
-   pip install otlingam
+   python -m pip install pitcp
 
 Usage
 -----
 
-The following example simulates a linear non-Gaussian structural equation model, learns a causal order with ``GreedyOTLiNGAM``, and compares the true and estimated weighted adjacency matrices.
+Example:
 
 .. code-block:: python
 
-   import matplotlib.pyplot as plt
-   import numpy as np
-   from otlingam import GreedyOTLiNGAM, disorder
+    import torch
+    import zuko
+    from pitcp import PITCP
 
-   rng = np.random.default_rng(42)
-   n_samples = 5_000
-   adjacency_matrix = np.array(
-       [
-           [0.0, 0.0, 0.0, 0.0, 0.0],
-           [0.8, 0.0, 0.0, 0.0, 0.0],
-           [0.0, -0.7, 0.0, 0.0, 0.0],
-           [0.5, 0.0, 0.9, 0.0, 0.0],
-           [0.0, -0.6, 0.0, 0.7, 0.0],
-       ]
-   )
-   noise = rng.uniform(-1.0, 1.0, size=(n_samples, 5))
-   X = noise @ np.linalg.inv(np.eye(5) - adjacency_matrix).T
 
-   model = GreedyOTLiNGAM().fit(X)
+    def std(x):
+        return torch.where((x > -0.9) & (x < 0.9), torch.cos(torch.pi * x / 2), 1.0)
 
-   print("Estimated causal order:", model.causal_order_)
-   print("Disorder:", disorder(model.causal_order_, adjacency_matrix))
 
-   fig, axes = plt.subplots(1, 2, figsize=(10, 4), layout="constrained")
-   matrices = (adjacency_matrix, model.adjacency_matrix_)
-   titles = ("True adjacency matrix", "Estimated adjacency matrix")
-   for ax, matrix, title in zip(axes, matrices, titles, strict=True):
-       image = ax.imshow(matrix, cmap="RdBu_r", vmin=-1.0, vmax=1.0)
-       ax.set_title(title)
-       ax.set_xlabel("Parent")
-       ax.set_ylabel("Child")
-   fig.colorbar(image, ax=axes, label="Edge weight")
+    def gen_data(n):
+        x = torch.rand(n, 1) * 2 - 1
+        return x, torch.randn(n, 1) * std(x)
 
-   plt.show()
 
-Configuration
--------------
+    torch.manual_seed(42)
 
-``ExhaustiveOTLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyOTLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
+    (X_train, y_train), (X_cal, y_cal), (X_test, y_test) = [
+        gen_data(5000) for _ in range(3)
+    ]
 
-Fitted estimators expose ``causal_order_`` from source to sink, ``adjacency_matrix_`` with entry :math:`(j, k)` representing the effect :math:`k \to j`, ``score_`` for score-based estimators, and ``intercept_`` when intercept fitting is enabled.
+
+    # Define a nonconformity score
+    def score(x, y):
+        return y.abs()
+
+
+    # Build a normalizing flow density estimator
+    model = zuko.flows.NSF(features=1, context=1, bins=4, hidden_features=(32, 32, 32))
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+
+    # Compute nonconformity scores
+    s_train = score(X_train, y_train)
+    s_cal = score(X_cal, y_cal)
+    s_test = score(X_test, y_test)
+
+    # Fit and conformalize
+    pitcp = PITCP(model, optimizer, n_epochs=10, batch_size=128)
+    pitcp.fit(X_train, s_train)
+    pitcp.conformalize(X_cal, s_cal)
+
+    # Predict conformal regions (max score thresholds) at multiple quantiles
+    limits = pitcp.predict(X_test, quantile=[0.7, 0.8, 0.9])
+
+    # Predict conformal coverage at multiple quantiles (single float accepted)
+    covered = pitcp.predict_coverage(X_test, s_test, quantile=[0.7, 0.8, 0.9])
+    print(f"Empirical coverages: {covered.mean(axis=0)}")
 
 API Reference
 -------------
 
-.. autoclass:: otlingam.ExhaustiveOTLiNGAM
+.. autoclass:: pitcp.PITCP
    :members:
+   :undoc-members:
    :show-inheritance:
-
-.. autoclass:: otlingam.GreedyOTLiNGAM
-   :members:
-   :show-inheritance:
-
-.. autoclass:: otlingam.OTICALiNGAM
-   :members:
-   :show-inheritance:
-
-.. autofunction:: otlingam.disorder
