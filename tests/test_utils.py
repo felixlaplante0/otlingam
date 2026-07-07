@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from otlingam import disorder
+from otica._utils import gauss_quantiles
 
 from ._utils import linear_dag
 
@@ -21,3 +22,13 @@ def test_disorder_validation():
 
     with pytest.raises(ValueError, match="permutation"):
         disorder([0, 0], np.eye(2))
+
+
+def test_gauss_quantiles():
+    """Checks basic Gaussian rank-statistic properties."""
+    quantiles = gauss_quantiles(6)
+
+    assert quantiles.shape == (6,)
+    assert np.all(np.diff(quantiles) > 0.0)
+    assert np.isclose(quantiles.mean(), 0.0)
+    
