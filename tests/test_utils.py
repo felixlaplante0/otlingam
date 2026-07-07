@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from otlingam import disorder
-from otica._utils import gauss_quantiles
+from otlingam._utils import gauss_quantiles
 
 from ._utils import linear_dag
 
