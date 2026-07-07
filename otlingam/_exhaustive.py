@@ -25,7 +25,7 @@ def _get_A_num(
     Returns:
         tuple[np.ndarray, int]: Packed lower-triangular matrix and number of parents.
     """
-    parents = np.empty(d - 1, dtype=np.int32)
+    parents = np.empty(d - 1, dtype=np.int64)
     A = np.empty(d * (d + 1) // 2, dtype=np.float64)
     i = k = 0
 
@@ -177,7 +177,7 @@ def _sink_dp(
     """
     n = 1 << d
     H = np.zeros(n, dtype=np.float64)
-    sinks = np.full(n, -1, dtype=np.int32)
+    sinks = np.full(n, -1, dtype=np.int64)
 
     for mask in range(1, n):
         cur_best_score = -np.inf
