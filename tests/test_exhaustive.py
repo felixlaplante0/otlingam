@@ -1,7 +1,9 @@
 """Tests for exhaustive dynamic-programming internals."""
 
 import numpy as np
+import pytest
 
+from otlingam import ExhaustiveOTLiNGAM
 from otlingam._exhaustive import (
     _causal_order,
     _cholesky_solve_norm_inplace,
@@ -61,3 +63,11 @@ def test_sink_dp():
     assert np.isfinite(score)
     assert np.isfinite(total_score)
     assert sorted(order.tolist()) == [0, 1, 2]
+
+
+def test_singular_residuals():
+    """Checks that singular residual systems produce a clear error."""
+    X = np.ones((4, 2))
+
+    with pytest.raises(ValueError, match="singular residual"):
+        ExhaustiveOTLiNGAM().fit(X)

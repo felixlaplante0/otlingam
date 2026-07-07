@@ -39,11 +39,12 @@ class OTICALiNGAM(ICALiNGAM, BaseEstimator):
 
     intercept_: np.ndarray
 
-    def fit(self, X: np.typing.ArrayLike) -> Self:
+    def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
         """Fits the model to the observations.
 
         Args:
             X (np.typing.ArrayLike): Training observations.
+            y (None, optional): Ignored. Defaults to None.
 
         Returns:
             Self: The fitted estimator.
@@ -59,11 +60,17 @@ class OTICALiNGAM(ICALiNGAM, BaseEstimator):
         ).fit(X)  # type: ignore
         W_ica = ica.components_
 
-        _, col_index = linear_sum_assignment(1 / np.abs(W_ica))
+        abs_W_ica = np.abs(W_ica)
+        cost = np.full(abs_W_ica.shape, np.finfo(abs_W_ica.dtype).max)
+        np.divide(1.0, abs_W_ica, out=cost, where=abs_W_ica > 0.0)
+        _, col_index = linear_sum_assignment(cost)
         PW_ica = np.zeros_like(W_ica)
         PW_ica[col_index] = W_ica
 
         D = np.diag(PW_ica)[:, np.newaxis]
+        if np.any(D == 0.0):
+            raise ValueError("OTICA produced a singular unmixing permutation.")
+
         W_estimate = PW_ica / D
         B_estimate = np.eye(len(W_estimate)) - W_estimate
 

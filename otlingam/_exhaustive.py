@@ -70,6 +70,8 @@ def _cholesky_solve_norm_inplace(A: np.ndarray, k: int) -> float:
         ij = ii + j
         for l in range(j):  # noqa: E741
             A[ij] -= A[ii + l] * A[j * (j + 1) // 2 + l]
+        if A[ij] <= 0.0:
+            raise ValueError("X must not induce a singular residual system.")
         A[ij] = np.sqrt(A[ij])
 
     return A[k * (k + 3) // 2] ** 2
@@ -174,7 +176,7 @@ def _sink_dp(
         tuple[np.ndarray, float]: Optimal sink index for each subset and total score.
     """
     n = 1 << d
-    H = np.zeros(n, dtype=np.float32)
+    H = np.zeros(n, dtype=np.float64)
     sinks = np.full(n, -1, dtype=np.int32)
 
     for mask in range(1, n):

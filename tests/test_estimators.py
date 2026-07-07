@@ -41,7 +41,7 @@ def test_oticalingam_fit():
     X, _ = linear_dag()
     estimator = OTICALiNGAM(random_state=42, max_iter=1)
 
-    assert estimator.fit(X) is estimator
+    assert estimator.fit(X, y=None) is estimator
     assert estimator.adjacency_matrix_.shape == (3, 3)
     assert estimator.intercept_.shape == (3,)
     assert sorted(estimator.causal_order_) == [0, 1, 2]

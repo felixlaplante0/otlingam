@@ -71,7 +71,7 @@ def disorder(
 
     if B.shape[0] != B.shape[1]:
         raise ValueError(
-            f"adjacency_matrix must be a square array, got shape {B.shape}"
+            f"adjacency_matrix must be a square array, got shape {B.shape}."
         )
 
     d = B.shape[0]
