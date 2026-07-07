@@ -3,6 +3,7 @@ from typing import Self, cast
 import numpy as np
 from lingam.base import _BaseLiNGAM
 from numba import njit  # type: ignore
+from sklearn.base import BaseEstimator
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data
 
@@ -217,7 +218,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveOTLiNGAM(_BaseLiNGAM):
+class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     """Exhaustive score-based causal discovery via subset dynamic programming.
 
     This estimator learns a directed acyclic graph by finding the causal ordering that

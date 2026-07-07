@@ -5,6 +5,8 @@ readme = "README.md"
 urls = { "Source" = "https://github.com/felixlaplante0/otlingam" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
 dependencies = ["numpy", "numba", "scikit-learn", "lingam", "otica"]
 dynamic = ["version"]
 classifiers = [
@@ -14,8 +16,11 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-cov>=5"]
+
 [build-system]
-requires = ["setuptools>=42", "setuptools-scm[toml]>=6.0", "wheel"]
+requires = ["setuptools>=77", "setuptools-scm[toml]>=6.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -29,6 +34,7 @@ local_scheme = "no-local-version"
 otlingam = ["py.typed"]
 
 [tool.ruff]
+extend-exclude = ["scripts"]
 lint.select = [
     "D",   # pydocstyle (docstring conventions)
     "E",   # pycodestyle errors
@@ -53,3 +59,6 @@ lint.ignore = ["D417", "PLR0913"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]

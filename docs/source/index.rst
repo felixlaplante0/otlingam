@@ -115,7 +115,7 @@ API Reference
    :members:
    :show-inheritance:
 
-.. autoclass:: otlingam.ICAiNGAM
+.. autoclass:: otlingam.OTICALiNGAM
    :members:
    :show-inheritance:
 

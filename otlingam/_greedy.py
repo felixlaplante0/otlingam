@@ -2,13 +2,14 @@ from typing import Self, cast
 
 import numpy as np
 from lingam.base import _BaseLiNGAM  # type: ignore
+from sklearn.base import BaseEstimator
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ._utils import gauss_quantiles, recover_weights
 
 
-class GreedyOTLiNGAM(_BaseLiNGAM):
+class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     """Greedy score-based causal discovery by sequential source removal.
 
     This estimator repeatedly selects the most non-Gaussian standardized residual as

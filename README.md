@@ -1,5 +1,7 @@
 # 📊 Optimal Transport LiNGAM
 
+[![codecov](https://codecov.io/gh/felixlaplante0/otlingam/graph/badge.svg)](https://codecov.io/gh/felixlaplante0/otlingam)
+
 **otlingam** is a Python package for causal discovery in linear non-Gaussian structural equation models. It learns causal orders by maximizing the Wasserstein non-Gaussianity of standardized regression residuals and estimates edge weights with adaptive Lasso.
 
 ---
