@@ -46,7 +46,7 @@ At the population level, the maximizers of $G$ are exactly the topological order
 ## 🚀 Installation
 
 ```bash
-pip install otlingam
+python -m pip install otlingam
 ```
 
 ## 🔧 Usage
