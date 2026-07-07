@@ -1,5 +1,3 @@
-"""Tests for otlingam estimator workflows."""
-
 import numpy as np
 import pytest
 from sklearn.base import clone
