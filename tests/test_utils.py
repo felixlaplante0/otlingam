@@ -1,5 +1,3 @@
-"""Tests for otlingam utility functions."""
-
 import numpy as np
 import pytest
 
