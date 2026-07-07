@@ -1,5 +1,3 @@
-"""Tests for exhaustive dynamic-programming internals."""
-
 import numpy as np
 import pytest
 
