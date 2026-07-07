@@ -21,7 +21,7 @@ def test_regression_helpers():
     X, _ = linear_dag()
     X = X - X.mean(axis=0)
     cov_matrix = X.T @ X
-    mask = 0b011
+    mask = 0b11
     target = 2
     d = X.shape[1]
     parent_count = 2
@@ -54,7 +54,7 @@ def test_sink_dp():
     quantiles = gauss_quantiles(X.shape[0])
     d = X.shape[1]
 
-    score = _score.py_func(X, cov_matrix, quantiles, target=2, mask=0b011, d=d)
+    score = _score.py_func(X, cov_matrix, quantiles, target=2, mask=0b11, d=d)
     sinks, total_score = _sink_dp.py_func(X, cov_matrix, quantiles, d)
     order = _causal_order(sinks, d)
 
