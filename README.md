@@ -99,5 +99,3 @@ plt.show()
 ## 📖 Learn More
 
 For configuration details and the API reference, visit [otlingam's documentation](https://felixlaplante0.github.io/otlingam).
-
->>>>>>> b54f299ce4a7d10bd3c7ac1e6c487aa9eff255e1
