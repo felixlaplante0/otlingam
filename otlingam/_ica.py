@@ -1,4 +1,4 @@
-from typing import Self, cast
+from typing import Self
 
 import numpy as np
 from lingam import ICALiNGAM
@@ -49,10 +49,7 @@ class OTICALiNGAM(ICALiNGAM, BaseEstimator):
         Returns:
             Self: The fitted estimator.
         """
-        X = cast(
-            np.ndarray,
-            validate_data(self, X, dtype=np.float64),  # type: ignore
-        )
+        X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
 
         ica = OTICA(
             max_iter=self._max_iter,

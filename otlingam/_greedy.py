@@ -1,4 +1,4 @@
-from typing import ClassVar, Self, cast
+from typing import ClassVar, Self
 
 import numpy as np
 from lingam.base import _BaseLiNGAM  # type: ignore
@@ -46,7 +46,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
 
     _parameter_constraints: ClassVar[dict] = {"fit_intercept": ["boolean"]}
 
-    def __init__(self, fit_intercept: bool = True) -> None:
+    def __init__(self, fit_intercept: bool = True):
         """Initializes GreedyOTLiNGAM.
 
         Args:
@@ -74,7 +74,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
             ValueError: If a residual has zero variance.
         """
         self._validate_params()
-        X = cast(np.ndarray, validate_data(self, X))  # type: ignore
+        X = np.asarray(validate_data(self, X))  # type: ignore
         n, d = X.shape
 
         if self.fit_intercept:

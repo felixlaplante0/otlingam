@@ -316,7 +316,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
 
     _parameter_constraints: ClassVar[dict] = {"fit_intercept": ["boolean"]}
 
-    def __init__(self, fit_intercept: bool = True) -> None:
+    def __init__(self, fit_intercept: bool = True):
         """Initializes ExhaustiveOTLiNGAM.
 
         Args:
@@ -341,10 +341,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
             ExhaustiveOTLiNGAM: The fitted estimator.
         """
         self._validate_params()
-        X = cast(
-            np.ndarray,
-            validate_data(self, X, dtype=np.float64),  # type: ignore
-        )
+        X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
         n, d = X.shape
 
         if d > _MAX_DP_VARIABLES:
