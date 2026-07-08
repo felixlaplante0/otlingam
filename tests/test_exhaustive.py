@@ -3,10 +3,11 @@ import pytest
 
 from otlingam import ExhaustiveOTLiNGAM
 from otlingam._exhaustive import (
+    _MAX_DP_VARIABLES,
+    _build_augmented_gram,
     _causal_order,
     _cholesky_solve_norm_inplace,
     _compute_residuals,
-    _get_A_num,
     _score,
     _sink_dp,
     _solve_coef,
@@ -26,7 +27,7 @@ def test_regression_helpers():
     d = X.shape[1]
     parent_count = 2
 
-    A, k = _get_A_num.py_func(cov_matrix, mask, target, d)
+    A, k = _build_augmented_gram.py_func(cov_matrix, mask, target, d)
     assert k == parent_count
 
     gram = cov_matrix[:2, :2]
@@ -64,8 +65,17 @@ def test_sink_dp():
 
 
 def test_singular_residuals():
-    """Checks that singular residual systems produce a clear error."""
+    """Checks that singular residual systems produce a non-finite score."""
     X = np.ones((4, 2))
 
-    with pytest.raises(ValueError, match="singular residual"):
+    estimator = ExhaustiveOTLiNGAM().fit(X)
+
+    assert not np.isfinite(estimator.score_)
+
+
+def test_variable_limit():
+    """Checks that oversized exhaustive problems fail before DP allocation."""
+    X = np.ones((2, _MAX_DP_VARIABLES + 1))
+
+    with pytest.raises(ValueError, match="at most"):
         ExhaustiveOTLiNGAM().fit(X)

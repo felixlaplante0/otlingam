@@ -2,19 +2,21 @@ from typing import Self, cast
 
 import numpy as np
 from lingam.base import _BaseLiNGAM
-from numba import njit  # type: ignore
+from numba import njit, prange  # type: ignore
 from sklearn.base import BaseEstimator
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data
 
 from ._utils import gauss_quantiles, recover_weights
 
+_MAX_DP_VARIABLES = 31
+
 
 @njit(cache=True, inline="always")  # type: ignore
-def _get_A_num(
+def _build_augmented_gram(
     cov_matrix: np.ndarray, mask: int, target: int, d: int
 ) -> tuple[np.ndarray, int]:
-    """Gets the packed lower-triangular system matrix A and number of parents.
+    """Builds the packed augmented Gram system and number of parents.
 
     Args:
         cov_matrix (np.ndarray): Covariance matrix.
@@ -23,9 +25,9 @@ def _get_A_num(
         d (int): Number of variables.
 
     Returns:
-        tuple[np.ndarray, int]: Packed lower-triangular matrix and number of parents.
+        tuple[np.ndarray, int]: Packed augmented Gram matrix and number of parents.
     """
-    parents = np.empty(d - 1, dtype=np.int64)
+    parents = np.empty(d - 1, dtype=np.int32)
     A = np.empty(d * (d + 1) // 2, dtype=np.float64)
     i = k = 0
 
@@ -71,7 +73,7 @@ def _cholesky_solve_norm_inplace(A: np.ndarray, k: int) -> float:
         for l in range(j):  # noqa: E741
             A[ij] -= A[ii + l] * A[j * (j + 1) // 2 + l]
         if A[ij] <= 0.0:
-            raise ValueError("X must not induce a singular residual system.")
+            return np.nan
         A[ij] = np.sqrt(A[ij])
 
     return A[k * (k + 3) // 2] ** 2
@@ -149,7 +151,7 @@ def _score(
     """
     n = X.shape[0]
 
-    A, k = _get_A_num(cov_matrix, mask, target, d)
+    A, k = _build_augmented_gram(cov_matrix, mask, target, d)
     rss = _cholesky_solve_norm_inplace(A, k)
     coef = _solve_coef(A, k)
 
@@ -160,7 +162,55 @@ def _score(
     return np.mean((z - quantiles) ** 2)  # type: ignore
 
 
-@njit(cache=True, fastmath=True)  # type: ignore
+@njit(cache=True, inline="always")  # type: ignore
+def _popcount(mask: int) -> int:
+    """Counts the number of active bits in a mask.
+
+    Args:
+        mask (int): Bitmask encoding a subset.
+
+    Returns:
+        int: Number of active bits.
+    """
+    count = 0
+    while mask:
+        count += mask & 1
+        mask >>= 1
+
+    return count
+
+
+@njit(cache=True, inline="always")  # type: ignore
+def _masks_by_size(d: int, n: int) -> tuple[np.ndarray, np.ndarray]:
+    """Groups subset masks by cardinality.
+
+    Args:
+        d (int): Number of variables.
+        n (int): Number of subsets.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Masks grouped by cardinality and layer offsets.
+    """
+    counts = np.zeros(d + 1, dtype=np.int32)
+    for mask in range(1, n):
+        counts[_popcount(mask)] += 1
+
+    offsets = np.zeros(d + 2, dtype=np.int32)
+    for size in range(1, d + 1):
+        offsets[size + 1] = offsets[size] + counts[size]
+
+    positions = offsets.copy()
+    masks = np.empty(n - 1, dtype=np.int32)
+    for mask in range(1, n):
+        size = _popcount(mask)
+        idx = positions[size]
+        masks[idx] = mask
+        positions[size] += 1
+
+    return masks, offsets
+
+
+@njit(cache=True, fastmath=True, parallel=True)  # type: ignore
 def _sink_dp(
     X: np.ndarray, cov_matrix: np.ndarray, quantiles: np.ndarray, d: int
 ) -> tuple[np.ndarray, float]:
@@ -176,25 +226,30 @@ def _sink_dp(
         tuple[np.ndarray, float]: Optimal sink index for each subset and total score.
     """
     n = 1 << d
-    H = np.zeros(n, dtype=np.float64)
-    sinks = np.full(n, -1, dtype=np.int64)
+    H = np.zeros(n, dtype=np.float32)
+    sinks = np.full(n, -1, dtype=np.int32)
+    masks, offsets = _masks_by_size(d, n)
 
-    for mask in range(1, n):
-        cur_best_score = -np.inf
-        cur_best_sink = -1
-        bits = mask
-        s = 0
-        while bits:
-            if bits & 1:
-                prev_mask = mask ^ (1 << s)
-                score = H[prev_mask] + _score(X, cov_matrix, quantiles, s, prev_mask, d)
-                if score > cur_best_score:
-                    cur_best_score = score
-                    cur_best_sink = s
-            bits >>= 1
-            s += 1
-        H[mask] = cur_best_score
-        sinks[mask] = cur_best_sink
+    for size in range(1, d + 1):
+        for idx in prange(offsets[size], offsets[size + 1]):
+            mask = masks[idx]
+            cur_best_score = -np.inf
+            cur_best_sink = -1
+            bits = mask
+            s = 0
+            while bits:
+                if bits & 1:
+                    prev_mask = mask ^ (1 << s)
+                    score = H[prev_mask] + _score(
+                        X, cov_matrix, quantiles, s, prev_mask, d
+                    )
+                    if score > cur_best_score:
+                        cur_best_score = score
+                        cur_best_sink = s
+                bits >>= 1
+                s += 1
+            H[mask] = cur_best_score
+            sinks[mask] = cur_best_sink
 
     return sinks, H[n - 1]
 
@@ -289,6 +344,13 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
             validate_data(self, X, dtype=np.float64),  # type: ignore
         )
         n, d = X.shape
+
+        if d > _MAX_DP_VARIABLES:
+            raise ValueError(
+                "ExhaustiveOTLiNGAM supports at most "
+                f"{_MAX_DP_VARIABLES} variables because its subset dynamic "
+                "program stores 2 ** d states."
+            )
 
         if self.fit_intercept:
             shift = X.mean(axis=0)
