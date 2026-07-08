@@ -8,6 +8,8 @@ from otlingam._exhaustive import (
     _causal_order,
     _cholesky_solve_norm_inplace,
     _compute_residuals,
+    _masks_by_size,
+    _popcount,
     _score,
     _sink_dp,
     _solve_coef,
@@ -64,9 +66,21 @@ def test_sink_dp():
     assert sorted(order.tolist()) == [0, 1, 2]
 
 
+def test_mask_helpers():
+    """Exercises subset cardinality helpers."""
+    masks, offsets = _masks_by_size.py_func(d=3, n=8)
+
+    assert _popcount.py_func(0b1011) == 3
+    assert offsets.tolist() == [0, 0, 3, 6, 7]
+    assert masks.tolist() == [1, 2, 4, 3, 5, 6, 7]
+
+
 def test_singular_residuals():
     """Checks that singular residual systems produce a non-finite score."""
     X = np.ones((4, 2))
+    A = np.zeros(1)
+
+    assert np.isnan(_cholesky_solve_norm_inplace.py_func(A, 0))
 
     estimator = ExhaustiveOTLiNGAM().fit(X)
 
