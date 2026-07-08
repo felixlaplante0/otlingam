@@ -341,7 +341,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
         """
         X = cast(
             np.ndarray,
-            validate_data(self, X, dtype=np.float64, order="F"),  # type: ignore
+            validate_data(self, X, dtype=np.float64),  # type: ignore
         )
         n, d = X.shape
 
