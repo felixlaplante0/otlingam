@@ -14,7 +14,7 @@ from otlingam.models._exhaustive import (
     _sink_dp,
     _solve_coef,
 )
-from otlingam.models._utils import gauss_quantiles
+from otlingam.utils._wasserstein import gauss_quantiles
 
 from ._utils import linear_dag
 
