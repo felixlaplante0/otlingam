@@ -41,8 +41,8 @@ def recover_weights(order: np.ndarray, X: np.ndarray, d: int) -> np.ndarray:
 
 
 def disorder(
-    causal_order: np.typing.ArrayLike,
-    adjacency_matrix: np.typing.ArrayLike,
+    true_adjacency_matrix: np.typing.ArrayLike,
+    pred_causal_order: np.typing.ArrayLike,
 ) -> int:
     r"""Counts true edges reversed by a causal order.
 
@@ -53,33 +53,36 @@ def disorder(
         \mathrm{dis}(\hat{\sigma}) = \#\left\{ (k, j) : B^\star_{jk} \neq 0 \text{ and }
         \hat{\sigma}^{-1}(k) > \hat{\sigma}^{-1}(j) \right\}
 
-    It is zero exactly when `causal_order` is a topological order of the true DAG.
+    It is zero exactly when `pred_causal_order` is a topological order of the true DAG.
 
     Args:
-        causal_order (np.typing.ArrayLike): Node permutation from source to sink.
-        adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency matrix
-            whose entry :math:`B_{jk}` represents the edge :math:`k \to j`.
+        true_adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency
+            matrix whose entry :math:`B_{jk}` represents the edge :math:`k \to j`.
+        pred_causal_order (np.typing.ArrayLike): Estimated node permutation from source
+            to sink.
 
     Returns:
         int: Number of reversed true edges.
 
     Raises:
-        ValueError: If the matrix is not square or `causal_order` is not a permutation.
+        ValueError: If the matrix is not square or `pred_causal_order` is not a
+            permutation.
     """
-    order = column_or_1d(causal_order, dtype=int)  # type: ignore
-    B = check_array(adjacency_matrix)
+    true_edges = check_array(true_adjacency_matrix)
+    pred_order = column_or_1d(pred_causal_order, dtype=int)  # type: ignore
 
-    if B.shape[0] != B.shape[1]:
+    if true_edges.shape[0] != true_edges.shape[1]:
         raise ValueError(
-            f"adjacency_matrix must be a square array, got shape {B.shape}."
+            "true_adjacency_matrix must be a square array, "
+            f"got shape {true_edges.shape}."
         )
 
-    d = B.shape[0]
-    if not np.array_equal(np.sort(order), np.arange(d)):
-        raise ValueError("causal_order must be a permutation of range(d).")
+    d = true_edges.shape[0]
+    if not np.array_equal(np.sort(pred_order), np.arange(d)):
+        raise ValueError("pred_causal_order must be a permutation of range(d).")
 
     pos = np.empty(d, dtype=np.int64)
-    pos[order] = np.arange(d)
+    pos[pred_order] = np.arange(d)
 
-    child, parent = np.nonzero(B)
+    child, parent = np.nonzero(true_edges)
     return int(np.sum(pos[parent] > pos[child]))
