@@ -8,7 +8,7 @@
 
 ## ✨ Features
 
-- **Exhaustive causal-order learning**: `ExhaustiveOTLiNGAM` uses subset dynamic programming to find a globally optimal order.
+- **Exhaustive causal-order learning**: ``ExhaustiveOTLiNGAM`` uses subset dynamic programming to find a globally optimal order.
 - **Scalable greedy learning**: `GreedyOTLiNGAM` constructs an order by sequentially selecting the most non-Gaussian residual.
 - **Optimal transport ICA**: `OTICALiNGAM` uses `OTICA` with FastICA initialization in the classical ICA-LiNGAM pipeline.
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
