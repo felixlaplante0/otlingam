@@ -6,6 +6,8 @@ Utils
    :no-undoc-members:
    :no-index:
 
+.. currentmodule:: otlingam.utils
+
 .. autosummary::
    :toctree: generated/
    :recursive:

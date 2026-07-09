@@ -113,15 +113,3 @@ API Reference
    :caption: API Reference:
 
    modules
-
-.. autoclass:: otlingam.ExhaustiveOTLiNGAM
-   :members:
-   :show-inheritance:
-
-.. autoclass:: otlingam.GreedyOTLiNGAM
-   :members:
-   :show-inheritance:
-
-.. autoclass:: otlingam.OTICALiNGAM
-   :members:
-   :show-inheritance:
