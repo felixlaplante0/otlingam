@@ -10,7 +10,8 @@ from lingam import DirectLiNGAM, ICALiNGAM
 from sklearn.exceptions import ConvergenceWarning
 from utils import DAGMA, gen_laplace, gen_t
 
-from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM, disorder
+from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
+from otlingam.utils import disorder
 
 # Set plot parameters
 plt.rcParams.update(

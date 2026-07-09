@@ -1,0 +1,6 @@
+﻿otlingam.utils.shd
+==================
+
+.. currentmodule:: otlingam.utils
+
+.. autofunction:: shd

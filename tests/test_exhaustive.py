@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from otlingam import ExhaustiveOTLiNGAM
-from otlingam._exhaustive import (
+from otlingam.models._exhaustive import (
     _MAX_DP_VARIABLES,
     _build_augmented_gram,
     _causal_order,
@@ -14,7 +14,7 @@ from otlingam._exhaustive import (
     _sink_dp,
     _solve_coef,
 )
-from otlingam._utils import gauss_quantiles
+from otlingam.models._utils import gauss_quantiles
 
 from ._utils import linear_dag
 

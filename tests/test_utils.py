@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from otlingam import disorder
-from otlingam._utils import gauss_quantiles
+from otlingam.models._utils import gauss_quantiles
+from otlingam.utils import disorder, f1_score, shd
 
 from ._utils import linear_dag
 
@@ -24,6 +24,59 @@ def test_disorder_validation():
         disorder([0, 0], np.eye(2))
 
 
+def test_shd():
+    """Counts missing, extra, and reversed directed edges."""
+    true_adjacency_matrix = np.array(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+        ]
+    )
+    pred_adjacency_matrix = np.array(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [2.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ]
+    )
+
+    assert shd(true_adjacency_matrix, pred_adjacency_matrix) == 2  # noqa: PLR2004
+
+
+def test_f1_score():
+    """Computes the directed-edge F1 score from nonzero entries."""
+    true_adjacency_matrix = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ]
+    )
+    pred_adjacency_matrix = np.array(
+        [
+            [0.0, 0.0, 1.0],
+            [2.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ]
+    )
+
+    assert f1_score(true_adjacency_matrix, pred_adjacency_matrix) == pytest.approx(0.5)
+    assert f1_score(np.zeros((2, 2)), np.eye(2)) == 0.0
+
+
+@pytest.mark.parametrize("metric", [shd, f1_score])
+def test_graph_metric_validation(metric):
+    """Checks graph-metric validation for incompatible adjacency matrices."""
+    with pytest.raises(ValueError, match="square array"):
+        metric(np.ones((2, 3)), np.eye(2))
+
+    with pytest.raises(ValueError, match="same shape"):
+        metric(np.eye(2), np.eye(3))
+
+
 def test_gauss_quantiles():
     """Checks basic Gaussian rank-statistic properties."""
     quantiles = gauss_quantiles(6)
@@ -31,4 +84,3 @@ def test_gauss_quantiles():
     assert quantiles.shape == (6,)
     assert np.all(np.diff(quantiles) > 0.0)
     assert np.isclose(quantiles.mean(), 0.0)
-    

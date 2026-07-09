@@ -1,0 +1,6 @@
+﻿otlingam.utils.f1\_score
+========================
+
+.. currentmodule:: otlingam.utils
+
+.. autofunction:: f1_score

@@ -1,0 +1,6 @@
+﻿otlingam.utils.disorder
+=======================
+
+.. currentmodule:: otlingam.utils
+
+.. autofunction:: disorder
