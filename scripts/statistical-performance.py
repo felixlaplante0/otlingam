@@ -77,7 +77,7 @@ def nd_results(graph_type, edges_per_node):
                             "Sweep": sweep,
                             "Value": value,
                             "Method": name,
-                            "Disorder": disorder(model.causal_order_, weights),
+                            "Disorder": disorder(weights, model.causal_order_),
                         }
                     )
 
@@ -106,7 +106,7 @@ def heterogeneity_results(graph_type, edges_per_node):
                     {
                         "Value": maximum_df,
                         "Method": name,
-                        "Disorder": disorder(model.causal_order_, weights),
+                        "Disorder": disorder(weights, model.causal_order_),
                     }
                 )
 
