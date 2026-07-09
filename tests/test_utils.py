@@ -26,7 +26,7 @@ def test_disorder_validation():
 
 def test_shd():
     """Counts missing, extra, and reversed directed edges."""
-    true_adjacency_matrix = np.array(
+    adjacency_matrix_true = np.array(
         [
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 0.0, 0.0, 0.0],
@@ -34,7 +34,7 @@ def test_shd():
             [0.0, 0.0, 1.0, 0.0],
         ]
     )
-    pred_adjacency_matrix = np.array(
+    adjacency_matrix_pred = np.array(
         [
             [0.0, 0.0, 0.0, 0.0],
             [2.0, 0.0, 1.0, 0.0],
@@ -43,19 +43,26 @@ def test_shd():
         ]
     )
 
-    assert shd(true_adjacency_matrix, pred_adjacency_matrix) == 2  # noqa: PLR2004
+    assert shd(adjacency_matrix_true, adjacency_matrix_pred) == 2  # noqa: PLR2004
+    assert (
+        shd(
+            adjacency_matrix_true=adjacency_matrix_true,
+            adjacency_matrix_pred=adjacency_matrix_pred,
+        )
+        == 2  # noqa: PLR2004
+    )
 
 
 def test_f1_score():
     """Computes the directed-edge F1 score from nonzero entries."""
-    true_adjacency_matrix = np.array(
+    adjacency_matrix_true = np.array(
         [
             [0.0, 0.0, 0.0],
             [1.0, 0.0, 0.0],
             [0.0, 1.0, 0.0],
         ]
     )
-    pred_adjacency_matrix = np.array(
+    adjacency_matrix_pred = np.array(
         [
             [0.0, 0.0, 1.0],
             [2.0, 0.0, 0.0],
@@ -63,7 +70,11 @@ def test_f1_score():
         ]
     )
 
-    assert f1_score(true_adjacency_matrix, pred_adjacency_matrix) == pytest.approx(0.5)
+    assert f1_score(adjacency_matrix_true, adjacency_matrix_pred) == pytest.approx(0.5)
+    assert f1_score(
+        adjacency_matrix_true=adjacency_matrix_true,
+        adjacency_matrix_pred=adjacency_matrix_pred,
+    ) == pytest.approx(0.5)
     assert f1_score(np.zeros((2, 2)), np.eye(2)) == 0.0
 
 

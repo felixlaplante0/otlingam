@@ -4,15 +4,15 @@ from sklearn.utils.validation import check_array, column_or_1d  # type: ignore
 
 
 def _check_adjacency_matrices(
-    true_adjacency_matrix: np.typing.ArrayLike,
-    pred_adjacency_matrix: np.typing.ArrayLike,
+    adjacency_matrix_true: np.typing.ArrayLike,
+    adjacency_matrix_pred: np.typing.ArrayLike,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Validates and binarizes a pair of adjacency matrices.
 
     Args:
-        true_adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency
+        adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
             matrix.
-        pred_adjacency_matrix (np.typing.ArrayLike): Estimated weighted adjacency
+        adjacency_matrix_pred (np.typing.ArrayLike): Estimated weighted adjacency
             matrix.
 
     Returns:
@@ -21,26 +21,26 @@ def _check_adjacency_matrices(
     Raises:
         ValueError: If either matrix is not square or the shapes differ.
     """
-    true_edges = check_array(true_adjacency_matrix) != 0.0
-    pred_edges = check_array(pred_adjacency_matrix) != 0.0
+    edges_true = check_array(adjacency_matrix_true) != 0.0
+    edges_pred = check_array(adjacency_matrix_pred) != 0.0
 
-    if true_edges.shape[0] != true_edges.shape[1]:
+    if edges_true.shape[0] != edges_true.shape[1]:
         raise ValueError(
-            "true_adjacency_matrix must be a square array, "
-            f"got shape {true_edges.shape}."
+            "adjacency_matrix_true must be a square array, "
+            f"got shape {edges_true.shape}."
         )
-    if pred_edges.shape[0] != pred_edges.shape[1]:
+    if edges_pred.shape[0] != edges_pred.shape[1]:
         raise ValueError(
-            "pred_adjacency_matrix must be a square array, "
-            f"got shape {pred_edges.shape}."
+            "adjacency_matrix_pred must be a square array, "
+            f"got shape {edges_pred.shape}."
         )
-    if true_edges.shape != pred_edges.shape:
+    if edges_true.shape != edges_pred.shape:
         raise ValueError(
-            "true_adjacency_matrix and pred_adjacency_matrix must have the same "
-            f"shape, got {true_edges.shape} and {pred_edges.shape}."
+            "adjacency_matrix_true and adjacency_matrix_pred must have the same "
+            f"shape, got {edges_true.shape} and {edges_pred.shape}."
         )
 
-    return true_edges, pred_edges
+    return edges_true, edges_pred
 
 
 def _off_diagonal_entries(adjacency_matrix: np.ndarray) -> np.ndarray:
@@ -70,8 +70,8 @@ def _pair_states(adjacency_matrix: np.ndarray) -> np.ndarray:
 
 
 def disorder(
-    true_adjacency_matrix: np.typing.ArrayLike,
-    pred_causal_order: np.typing.ArrayLike,
+    adjacency_matrix_true: np.typing.ArrayLike,
+    causal_order_pred: np.typing.ArrayLike,
 ) -> int:
     r"""Counts true edges reversed by a causal order.
 
@@ -84,44 +84,44 @@ def disorder(
         &\quad \hat{\sigma}^{-1}(k) > \hat{\sigma}^{-1}(j) \right\}.
         \end{aligned}
 
-    It is zero exactly when `pred_causal_order` is a topological order of the true DAG.
+    It is zero exactly when `causal_order_pred` is a topological order of the true DAG.
 
     Args:
-        true_adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency
+        adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
             matrix whose entry :math:`B_{jk}` represents the edge :math:`k \to j`.
-        pred_causal_order (np.typing.ArrayLike): Estimated node permutation from source
+        causal_order_pred (np.typing.ArrayLike): Estimated node permutation from source
             to sink.
 
     Returns:
         int: Number of reversed true edges.
 
     Raises:
-        ValueError: If the matrix is not square or `pred_causal_order` is not a
+        ValueError: If the matrix is not square or `causal_order_pred` is not a
             permutation.
     """
-    true_edges = check_array(true_adjacency_matrix)
-    pred_order = column_or_1d(pred_causal_order, dtype=int)  # type: ignore
+    edges_true = check_array(adjacency_matrix_true)
+    order_pred = column_or_1d(causal_order_pred, dtype=int)  # type: ignore
 
-    if true_edges.shape[0] != true_edges.shape[1]:
+    if edges_true.shape[0] != edges_true.shape[1]:
         raise ValueError(
-            "true_adjacency_matrix must be a square array, "
-            f"got shape {true_edges.shape}."
+            "adjacency_matrix_true must be a square array, "
+            f"got shape {edges_true.shape}."
         )
 
-    d = true_edges.shape[0]
-    if not np.array_equal(np.sort(pred_order), np.arange(d)):
-        raise ValueError("pred_causal_order must be a permutation of range(d).")
+    d = edges_true.shape[0]
+    if not np.array_equal(np.sort(order_pred), np.arange(d)):
+        raise ValueError("causal_order_pred must be a permutation of range(d).")
 
     pos = np.empty(d, dtype=np.int64)
-    pos[pred_order] = np.arange(d)
+    pos[order_pred] = np.arange(d)
 
-    child, parent = np.nonzero(true_edges)
+    child, parent = np.nonzero(edges_true)
     return int(np.sum(pos[parent] > pos[child]))
 
 
 def shd(
-    true_adjacency_matrix: np.typing.ArrayLike,
-    pred_adjacency_matrix: np.typing.ArrayLike,
+    adjacency_matrix_true: np.typing.ArrayLike,
+    adjacency_matrix_pred: np.typing.ArrayLike,
 ) -> int:
     r"""Computes structural Hamming distance between two directed graphs.
 
@@ -130,9 +130,9 @@ def shd(
     a reversed edge each contribute one unit to the structural Hamming distance.
 
     Args:
-        true_adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency
+        adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
             matrix.
-        pred_adjacency_matrix (np.typing.ArrayLike): Estimated weighted adjacency
+        adjacency_matrix_pred (np.typing.ArrayLike): Estimated weighted adjacency
             matrix.
 
     Returns:
@@ -141,16 +141,16 @@ def shd(
     Raises:
         ValueError: If either matrix is not square or the shapes differ.
     """
-    true_edges, pred_edges = _check_adjacency_matrices(
-        true_adjacency_matrix,
-        pred_adjacency_matrix,
+    edges_true, edges_pred = _check_adjacency_matrices(
+        adjacency_matrix_true,
+        adjacency_matrix_pred,
     )
-    return int((_pair_states(true_edges) != _pair_states(pred_edges)).sum())
+    return int((_pair_states(edges_true) != _pair_states(edges_pred)).sum())
 
 
 def f1_score(
-    true_adjacency_matrix: np.typing.ArrayLike,
-    pred_adjacency_matrix: np.typing.ArrayLike,
+    adjacency_matrix_true: np.typing.ArrayLike,
+    adjacency_matrix_pred: np.typing.ArrayLike,
 ) -> float:
     r"""Computes the directed-edge F1 score between two adjacency matrices.
 
@@ -159,9 +159,9 @@ def f1_score(
     convention, where entry `(j, k)` represents the edge :math:`k \to j`.
 
     Args:
-        true_adjacency_matrix (np.typing.ArrayLike): Ground-truth weighted adjacency
+        adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
             matrix.
-        pred_adjacency_matrix (np.typing.ArrayLike): Estimated weighted adjacency
+        adjacency_matrix_pred (np.typing.ArrayLike): Estimated weighted adjacency
             matrix.
 
     Returns:
@@ -170,14 +170,14 @@ def f1_score(
     Raises:
         ValueError: If either matrix is not square or the shapes differ.
     """
-    true_edges, pred_edges = _check_adjacency_matrices(
-        true_adjacency_matrix,
-        pred_adjacency_matrix,
+    edges_true, edges_pred = _check_adjacency_matrices(
+        adjacency_matrix_true,
+        adjacency_matrix_pred,
     )
     return float(
         sklearn_f1_score(
-            _off_diagonal_entries(true_edges),
-            _off_diagonal_entries(pred_edges),
+            _off_diagonal_entries(edges_true),
+            _off_diagonal_entries(edges_pred),
             zero_division=0.0,
         )
     )
