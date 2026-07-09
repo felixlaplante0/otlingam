@@ -84,7 +84,8 @@ def disorder(
         &\quad \hat{\sigma}^{-1}(k) > \hat{\sigma}^{-1}(j) \right\}.
         \end{aligned}
 
-    It is zero exactly when ``causal_order_pred`` is a topological order of the true DAG.
+    It is zero exactly when ``causal_order_pred`` is a topological order of the true
+    DAG.
 
     Args:
         adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
