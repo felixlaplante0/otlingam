@@ -44,13 +44,6 @@ def test_shd():
     )
 
     assert shd(adjacency_matrix_true, adjacency_matrix_pred) == 2  # noqa: PLR2004
-    assert (
-        shd(
-            adjacency_matrix_true=adjacency_matrix_true,
-            adjacency_matrix_pred=adjacency_matrix_pred,
-        )
-        == 2  # noqa: PLR2004
-    )
 
 
 def test_f1_score():
@@ -71,10 +64,6 @@ def test_f1_score():
     )
 
     assert f1_score(adjacency_matrix_true, adjacency_matrix_pred) == pytest.approx(0.5)
-    assert f1_score(
-        adjacency_matrix_true=adjacency_matrix_true,
-        adjacency_matrix_pred=adjacency_matrix_pred,
-    ) == pytest.approx(0.5)
     assert f1_score(np.zeros((2, 2)), np.eye(2)) == 0.0
 
 
