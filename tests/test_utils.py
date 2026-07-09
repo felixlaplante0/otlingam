@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from otlingam.models._utils import gauss_quantiles
+from otlingam.utils._wasserstein import gauss_quantiles
 from otlingam.utils import disorder, f1_score, shd
 
 from ._utils import linear_dag
