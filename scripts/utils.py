@@ -55,14 +55,13 @@ def _gen_dag(
 
     Args:
         d (int): Number of variables.
-        edges_per_node (int): Target number of edges per node. For an
-            Erd\"os--R\'enyi graph, the expected total number of edges is
-            ``edges_per_node * d``, subject to the maximum number of DAG edges.
-            For a scale-free graph, this is the Barab\'asi--Albert attachment
-            parameter, capped at ``d - 1``.
+        edges_per_node (int): Target number of edges per node. For an Erd\"os--R\'enyi
+            graph, the expected total number of edges is ``edges_per_node * d``, subject
+            to the maximum number of DAG edges. For a scale-free graph, this is the
+            Barab\'asi--Albert attachment parameter, capped at ``d - 1``.
         noise (np.ndarray): Independent noise with shape ``(n, d)``.
-        graph_type (str): Random graph family. ``er`` denotes an Erdos--Renyi graph
-            and ``sf`` denotes a scale-free graph.
+        graph_type (str): Random graph family. ``er`` denotes an Erdos--Renyi graph and
+            ``sf`` denotes a scale-free graph.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Observations and weighted adjacency matrix.

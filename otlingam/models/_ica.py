@@ -11,9 +11,9 @@ from sklearn.utils.validation import validate_data  # type: ignore
 class OTICALiNGAM(ICALiNGAM, BaseEstimator):
     """ICA-based LiNGAM using optimal transport ICA.
 
-    This estimator learns a directed acyclic graph by estimating an unmixing matrix
-    with ``OTICA``. The resulting matrix is permuted and scaled before a causal order
-    and adjacency matrix are estimated using ICA-LiNGAM's existing implementation.
+    This estimator learns a directed acyclic graph by estimating an unmixing matrix with
+    ``OTICA``. The resulting matrix is permuted and scaled before a causal order and
+    adjacency matrix are estimated using ICA-LiNGAM's existing implementation.
 
     Optimization settings:
         - ``random_state``: Seed used by OTICA's random number generator.
@@ -24,8 +24,8 @@ class OTICALiNGAM(ICALiNGAM, BaseEstimator):
         _max_iter (int): Maximum number of OTICA optimization iterations.
         _causal_order (list[np.integer] | None): Internal causal ordering. None before
             fitting.
-        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix.
-            None before fitting.
+        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
+            before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the structural equations.

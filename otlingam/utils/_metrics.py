@@ -127,8 +127,8 @@ def shd(
     r"""Computes structural Hamming distance between two directed graphs.
 
     The adjacency matrices follow the LiNGAM convention, where entry ``(j, k)``
-    represents the directed edge :math:``k \to j``. A missing edge, an extra edge, and
-    a reversed edge each contribute one unit to the structural Hamming distance.
+    represents the directed edge :math:``k \to j``. A missing edge, an extra edge, and a
+    reversed edge each contribute one unit to the structural Hamming distance.
 
     Args:
         adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency

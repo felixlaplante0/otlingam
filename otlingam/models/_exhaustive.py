@@ -283,9 +283,9 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     preceding variables in the ordering are used as its parent set.
 
     The optimal ordering is found exhaustively using subset dynamic programming.
-    Regression residuals are standardized and compared with standard normal quantiles
-    to compute the score. Once the ordering is recovered, edge weights are estimated
-    using adaptive lasso regression.
+    Regression residuals are standardized and compared with standard normal quantiles to
+    compute the score. Once the ordering is recovered, edge weights are estimated using
+    adaptive lasso regression.
 
     Data preprocessing settings:
         - ``fit_intercept``: Whether to center the data before fitting. Centering also
@@ -295,8 +295,8 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
         fit_intercept (bool): Whether to center the data before fitting.
         _causal_order (list[np.integer] | None): Internal causal ordering. None before
             fitting.
-        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix.
-            None before fitting.
+        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
+            before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only

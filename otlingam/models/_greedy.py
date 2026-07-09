@@ -12,10 +12,10 @@ from ..utils._wasserstein import gauss_quantiles
 class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     """Greedy score-based causal discovery by sequential source removal.
 
-    This estimator repeatedly selects the most non-Gaussian standardized residual as
-    the next source in the causal order. It then removes the source's linear effect
-    from every remaining variable. Once the ordering is recovered, edge weights are
-    estimated using adaptive lasso regression.
+    This estimator repeatedly selects the most non-Gaussian standardized residual as the
+    next source in the causal order. It then removes the source's linear effect from
+    every remaining variable. Once the ordering is recovered, edge weights are estimated
+    using adaptive lasso regression.
 
     Data preprocessing settings:
         - ``fit_intercept``: Whether to center the data before fitting. Centering also
@@ -25,8 +25,8 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
         fit_intercept (bool): Whether to center the data before fitting.
         _causal_order (list[np.integer] | None): Internal causal ordering. None before
             fitting.
-        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix.
-            None before fitting.
+        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
+            before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only
