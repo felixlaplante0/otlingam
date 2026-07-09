@@ -2,11 +2,11 @@ from typing import ClassVar, Self
 
 import numpy as np
 from lingam.base import _BaseLiNGAM  # type: ignore
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
-from ._utils import gauss_quantiles, recover_weights
+from ..utils._wasserstein import gauss_quantiles
 
 
 class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
@@ -105,16 +105,16 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
             if not remaining:
                 break
 
-            source_residual = residuals[:, source]
-            effects = (
+            source_residual = residuals[:, source]  # type: ignore
+            effects = (  # type: ignore
                 source_residual
                 @ residuals[:, remaining]
                 / (source_residual @ source_residual)
             )
-            residuals[:, remaining] -= np.outer(source_residual, effects)
+            residuals[:, remaining] -= np.outer(source_residual, effects)  # type: ignore
 
         self._causal_order = list(order)
-        self._adjacency_matrix = recover_weights(order, X, d)
+        self._estimate_adjacency_matrix(X)
         self.score_ = float(score)
 
         if self.fit_intercept:

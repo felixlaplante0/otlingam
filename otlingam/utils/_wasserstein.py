@@ -1,5 +1,4 @@
 import numpy as np
-from lingam.utils import predict_adaptive_lasso  # type: ignore
 from scipy.special import ndtri  # type: ignore
 
 

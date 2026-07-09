@@ -1,13 +1,13 @@
 from typing import ClassVar, Self, cast
 
 import numpy as np
-from lingam.base import _BaseLiNGAM
+from lingam.base import _BaseLiNGAM  # type: ignore
 from numba import njit, prange  # type: ignore
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
-from sklearn.utils.validation import validate_data
+from sklearn.utils.validation import validate_data  # type: ignore
 
-from ._utils import gauss_quantiles, recover_weights
+from ..utils._wasserstein import gauss_quantiles
 
 _MAX_DP_VARIABLES = 31
 
@@ -359,13 +359,13 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
 
         quantiles = gauss_quantiles(n)  # type: ignore
 
-        sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)  # type: ignore
+        sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)
         order = _causal_order(sinks, d)
         self._causal_order = list(order)
-        self._adjacency_matrix = recover_weights(order, X, d)  # type: ignore
+        self._estimate_adjacency_matrix(X)
 
         if self.fit_intercept:
-            self.intercept_ = shift - self._adjacency_matrix @ shift  # type: ignore
+            self.intercept_ = shift - self._adjacency_matrix @ shift
         else:
             self.__dict__.pop("intercept_", None)
 

@@ -1,10 +1,10 @@
 from typing import Self
 
 import numpy as np
-from lingam import ICALiNGAM
+from lingam import ICALiNGAM  # type: ignore
 from otica import OTICA
 from scipy.optimize import linear_sum_assignment  # type: ignore
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 
