@@ -16,9 +16,9 @@ dagma.linear.tqdm = lambda *args, **kwargs: tqdm(*args, disable=True, **kwargs)
 class DAGMA(BaseEstimator):
     """Wraps linear DAGMA with the adjacency convention used by LiNGAM.
 
-    DAGMA represents an edge from variable `i` to variable `j` by entry `(i, j)`.
-    LiNGAM uses entry `(j, i)` for the same edge. This estimator transposes DAGMA's
-    result and exposes both `adjacency_matrix_` and `causal_order_` after fitting.
+    DAGMA represents an edge from variable ``i`` to variable ``j`` by entry ``(i, j)``.
+    LiNGAM uses entry ``(j, i)`` for the same edge. This estimator transposes DAGMA's
+    result and exposes both ``adjacency_matrix_`` and ``causal_order_`` after fitting.
 
     Attributes:
         adjacency_matrix_ (np.ndarray): Estimated weighted adjacency matrix in the
@@ -31,7 +31,7 @@ class DAGMA(BaseEstimator):
 
         Args:
             X (object): Observations with samples as rows and variables as columns.
-            y (object | None, optional): Ignored target values. Defaults to `None`.
+            y (object | None, optional): Ignored target values. Defaults to ``None``.
 
         Returns:
             Self: The fitted estimator.
@@ -57,12 +57,12 @@ def _gen_dag(
         d (int): Number of variables.
         edges_per_node (int): Target number of edges per node. For an
             Erd\"os--R\'enyi graph, the expected total number of edges is
-            `edges_per_node * d`, subject to the maximum number of DAG edges.
+            ``edges_per_node * d``, subject to the maximum number of DAG edges.
             For a scale-free graph, this is the Barab\'asi--Albert attachment
-            parameter, capped at `d - 1`.
-        noise (np.ndarray): Independent noise with shape `(n, d)`.
-        graph_type (str): Random graph family. `er` denotes an Erdos--Renyi graph
-            and `sf` denotes a scale-free graph.
+            parameter, capped at ``d - 1``.
+        noise (np.ndarray): Independent noise with shape ``(n, d)``.
+        graph_type (str): Random graph family. ``er`` denotes an Erdos--Renyi graph
+            and ``sf`` denotes a scale-free graph.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Observations and weighted adjacency matrix.
@@ -89,7 +89,7 @@ def gen_laplace(
         n (int): Number of observations.
         d (int): Number of variables.
         edges_per_node (int): Target number of edges per node.
-        graph_type (str, optional): Random graph family. Defaults to `er`.
+        graph_type (str, optional): Random graph family. Defaults to ``er``.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Observations and weighted adjacency matrix.
@@ -115,7 +115,7 @@ def gen_t(
         d (int): Number of variables.
         edges_per_node (int): Target number of edges per node.
         dfs (np.typing.ArrayLike): Degrees of freedom for the variables.
-        graph_type (str, optional): Random graph family. Defaults to `er`.
+        graph_type (str, optional): Random graph family. Defaults to ``er``.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: Observations and weighted adjacency matrix.

@@ -23,24 +23,24 @@ The estimators assume the linear structural equation model
 
 where the graph is acyclic and the structural noises are mutually independent, centered, and have finite nonzero variances. Causal-order identification additionally requires at most one Gaussian structural noise.
 
-For a candidate order :math:`\sigma \in \mathfrak{S}_d`, let :math:`R_j(\sigma)` be the population residual obtained by regressing :math:`X_j` on its predecessors under :math:`\sigma`. The oracle Wasserstein order objective is
+For a candidate order :math:``\sigma \in \mathfrak{S}_d``, let :math:``R_j(\sigma)`` be the population residual obtained by regressing :math:``X_j`` on its predecessors under :math:``\sigma``. The oracle Wasserstein order objective is
 
 .. math::
 
    G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
 
-Given observations :math:`X^{(1)}, \ldots, X^{(n)}`, let :math:`\widehat{R}_j^{(i)}(\sigma)` be the ordinary least-squares residual for observation :math:`i`. OTLiNGAM maximizes the empirical order objective
+Given observations :math:``X^{(1)}, \ldots, X^{(n)}``, let :math:``\widehat{R}_j^{(i)}(\sigma)`` be the ordinary least-squares residual for observation :math:``i``. OTLiNGAM maximizes the empirical order objective
 
 .. math::
 
    \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
 
-At the population level, the maximizers of :math:`G` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
+At the population level, the maximizers of :math:``G`` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
 
 Algorithms
 ----------
 
-``ExhaustiveOTLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:`d 2^{d - 1}` local scores and stores :math:`O(2^d)` states, so its exponential dependence on :math:`d` limits it to smaller systems.
+``ExhaustiveOTLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:``d 2^{d - 1}`` local scores and stores :math:``O(2^d)`` states, so its exponential dependence on :math:``d`` limits it to smaller systems.
 
 ``GreedyOTLiNGAM`` repeatedly selects the most non-Gaussian standardized residual, removes its linear effect from the remaining variables, and continues on the residualized system. This avoids subset enumeration and provides a quadratic-time order procedure.
 
@@ -103,7 +103,7 @@ Configuration
 
 ``ExhaustiveOTLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyOTLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
 
-Fitted estimators expose ``causal_order_`` from source to sink, ``adjacency_matrix_`` with entry :math:`(j, k)` representing the effect :math:`k \to j`, ``score_`` for score-based estimators, and ``intercept_`` when intercept fitting is enabled.
+Fitted estimators expose ``causal_order_`` from source to sink, ``adjacency_matrix_`` with entry :math:``(j, k)`` representing the effect :math:``k \to j``, ``score_`` for score-based estimators, and ``intercept_`` when intercept fitting is enabled.
 
 API Reference
 -------------

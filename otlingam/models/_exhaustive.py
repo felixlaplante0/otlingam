@@ -288,7 +288,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     using adaptive lasso regression.
 
     Data preprocessing settings:
-        - `fit_intercept`: Whether to center the data before fitting. Centering also
+        - ``fit_intercept``: Whether to center the data before fitting. Centering also
           enables estimation of an intercept for each variable.
 
     Attributes:
@@ -300,7 +300,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only
-            when `fit_intercept` is `True`.
+            when ``fit_intercept`` is ``True``.
         score_ (float): Squared Wasserstein distance-based score of the learned DAG.
 
     Examples:

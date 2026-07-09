@@ -12,12 +12,12 @@ class OTICALiNGAM(ICALiNGAM, BaseEstimator):
     """ICA-based LiNGAM using optimal transport ICA.
 
     This estimator learns a directed acyclic graph by estimating an unmixing matrix
-    with `OTICA`. The resulting matrix is permuted and scaled before a causal order
+    with ``OTICA``. The resulting matrix is permuted and scaled before a causal order
     and adjacency matrix are estimated using ICA-LiNGAM's existing implementation.
 
     Optimization settings:
-        - `random_state`: Seed used by OTICA's random number generator.
-        - `max_iter`: Maximum number of OTICA optimization iterations.
+        - ``random_state``: Seed used by OTICA's random number generator.
+        - ``max_iter``: Maximum number of OTICA optimization iterations.
 
     Attributes:
         _random_state (int | None): Seed used by OTICA's random number generator.

@@ -60,7 +60,7 @@ def _pair_states(adjacency_matrix: np.ndarray) -> np.ndarray:
 
     Args:
         adjacency_matrix (np.ndarray): Binary square adjacency matrix in the LiNGAM
-            convention, where entry `(j, k)` represents the edge :math:`k \to j`.
+            convention, where entry ``(j, k)`` represents the edge :math:``k \to j``.
 
     Returns:
         np.ndarray: Categorical edge states for unordered node pairs.
@@ -75,7 +75,7 @@ def disorder(
 ) -> int:
     r"""Counts true edges reversed by a causal order.
 
-    Let :math:`\hat{\sigma}` be the estimated order. The disorder is given by
+    Let :math:``\hat{\sigma}`` be the estimated order. The disorder is given by
 
     .. math::
 
@@ -84,11 +84,11 @@ def disorder(
         &\quad \hat{\sigma}^{-1}(k) > \hat{\sigma}^{-1}(j) \right\}.
         \end{aligned}
 
-    It is zero exactly when `causal_order_pred` is a topological order of the true DAG.
+    It is zero exactly when ``causal_order_pred`` is a topological order of the true DAG.
 
     Args:
         adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency
-            matrix whose entry :math:`B_{jk}` represents the edge :math:`k \to j`.
+            matrix whose entry :math:``B_{jk}`` represents the edge :math:``k \to j``.
         causal_order_pred (np.typing.ArrayLike): Estimated node permutation from source
             to sink.
 
@@ -96,7 +96,7 @@ def disorder(
         int: Number of reversed true edges.
 
     Raises:
-        ValueError: If the matrix is not square or `causal_order_pred` is not a
+        ValueError: If the matrix is not square or ``causal_order_pred`` is not a
             permutation.
     """
     edges_true = check_array(adjacency_matrix_true)
@@ -125,8 +125,8 @@ def shd(
 ) -> int:
     r"""Computes structural Hamming distance between two directed graphs.
 
-    The adjacency matrices follow the LiNGAM convention, where entry `(j, k)`
-    represents the directed edge :math:`k \to j`. A missing edge, an extra edge, and
+    The adjacency matrices follow the LiNGAM convention, where entry ``(j, k)``
+    represents the directed edge :math:``k \to j``. A missing edge, an extra edge, and
     a reversed edge each contribute one unit to the structural Hamming distance.
 
     Args:
@@ -156,7 +156,7 @@ def f1_score(
 
     The adjacency matrices are binarized by treating nonzero entries as edges. Diagonal
     entries are ignored, and directed edges are compared according to the LiNGAM
-    convention, where entry `(j, k)` represents the edge :math:`k \to j`.
+    convention, where entry ``(j, k)`` represents the edge :math:``k \to j``.
 
     Args:
         adjacency_matrix_true (np.typing.ArrayLike): Ground-truth weighted adjacency

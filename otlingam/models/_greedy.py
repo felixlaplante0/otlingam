@@ -18,7 +18,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
     estimated using adaptive lasso regression.
 
     Data preprocessing settings:
-        - `fit_intercept`: Whether to center the data before fitting. Centering also
+        - ``fit_intercept``: Whether to center the data before fitting. Centering also
           enables estimation of an intercept for each variable.
 
     Attributes:
@@ -30,7 +30,7 @@ class GreedyOTLiNGAM(_BaseLiNGAM, BaseEstimator):
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the regression models. Available only
-            when `fit_intercept` is `True`.
+            when ``fit_intercept`` is ``True``.
         score_ (float): Sum of the selected squared Wasserstein scores.
 
     Examples:

@@ -9,11 +9,11 @@
 ## ✨ Features
 
 - **Exhaustive causal-order learning**: ``ExhaustiveOTLiNGAM`` uses subset dynamic programming to find a globally optimal order.
-- **Scalable greedy learning**: `GreedyOTLiNGAM` constructs an order by sequentially selecting the most non-Gaussian residual.
-- **Optimal transport ICA**: `OTICALiNGAM` uses `OTICA` with FastICA initialization in the classical ICA-LiNGAM pipeline.
+- **Scalable greedy learning**: ``GreedyOTLiNGAM`` constructs an order by sequentially selecting the most non-Gaussian residual.
+- **Optimal transport ICA**: ``OTICALiNGAM`` uses ``OTICA`` with FastICA initialization in the classical ICA-LiNGAM pipeline.
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
-- **scikit-learn integration**: Native `BaseEstimator` integration with familiar `fit`, `get_params`, `set_params`, and `clone` support.
+- **scikit-learn integration**: Native ``BaseEstimator`` integration with familiar ``fit``, ``get_params``, ``set_params``, and ``clone`` support.
 
 ---
 
@@ -53,7 +53,7 @@ python -m pip install otlingam
 
 ### Example
 
-The following example simulates a linear non-Gaussian structural equation model, learns a causal order with `GreedyOTLiNGAM`, and compares the true and estimated weighted adjacency matrices.
+The following example simulates a linear non-Gaussian structural equation model, learns a causal order with ``GreedyOTLiNGAM``, and compares the true and estimated weighted adjacency matrices.
 
 ```python
 import matplotlib.pyplot as plt
@@ -92,7 +92,7 @@ fig.colorbar(image, ax=axes, label="Edge weight")
 plt.show()
 ```
 
-`ExhaustiveOTLiNGAM` provides global order optimization at an exponential cost in the number of variables. `GreedyOTLiNGAM` provides a quadratic-time alternative. Set `fit_intercept=False` when the observations are already centered. The default `fit_intercept=True` centers the data and exposes the fitted intercepts through `intercept_`.
+``ExhaustiveOTLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyOTLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
 
 ---
 
