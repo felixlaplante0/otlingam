@@ -61,4 +61,4 @@ lint.ignore = ["D417", "PLR0913"]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "D100"]
+"tests/**/*.py" = ["S101"]

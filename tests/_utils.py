@@ -1,3 +1,5 @@
+"""Private test helpers."""
+
 import numpy as np
 
 

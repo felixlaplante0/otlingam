@@ -1,3 +1,5 @@
+"""Tests for otlingam utilities."""
+
 import numpy as np
 import pytest
 

@@ -1,3 +1,5 @@
+"""Tests for exhaustive causal discovery."""
+
 import numpy as np
 import pytest
 
