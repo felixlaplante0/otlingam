@@ -37,18 +37,16 @@ N_RUNS = 10
 N_RANGE = (250, 500, 1000, 2000, 4000)
 D_RANGE = (6, 8, 10, 12, 16, 20)
 FIXED_N = 1000
-FIXED_D = 7
+FIXED_D = 8
 EDGES_PER_NODE = 2
 GRAPH_TYPE = "er"
-WARMUP_N = 250
-WARMUP_D = 7
 
 
 def main():
     # Warmup run to avoid including compilation time in the timing results
     warmup_data, _ = gen_laplace(
-        WARMUP_N,
-        WARMUP_D,
+        FIXED_N,
+        FIXED_D,
         EDGES_PER_NODE,
         graph_type=GRAPH_TYPE,
     )

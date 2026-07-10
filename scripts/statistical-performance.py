@@ -201,7 +201,7 @@ def main():
             plot(
                 axes[column],
                 results,
-                f"Max df, n = {HETEROGENEITY_N}, d = {HETEROGENEITY_D}",
+                f"Max df, n = {FIXED_N}, d = {FIXED_D}",
                 graph_title,
                 column == 0,
             )
