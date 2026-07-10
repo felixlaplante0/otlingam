@@ -215,7 +215,7 @@ def main():
                 axis,
                 results,
                 f"k (edges per node), n = {FIXED_N}, d = {FIXED_D}",
-                "ERk",
+                metric,
                 metric == "Disorder",
                 metric=metric,
             )
