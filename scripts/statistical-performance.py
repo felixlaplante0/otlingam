@@ -45,11 +45,12 @@ N_RANGE = (100, 250, 500, 1000, 1500)
 D_RANGE = (4, 6, 8, 10, 12)
 K_RANGE = (1, 2, 3, 4, 5, 6)
 FIXED_N = 1000
-FIXED_D = 7
+FIXED_D = 8
 HETEROGENEITY_N = 3000
 HETEROGENEITY_D = 8
 MIN_DF = 2.5
 MAX_DF_RANGE = (2.5, 5, 10, 20, 40)
+METRIC_DIRECTIONS = {"Disorder": "↓", "SHD": "↓", "F1 score": "↑"}
 
 
 def nd_results(graph_type, edges_per_node):
@@ -157,7 +158,7 @@ def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
         ax=axis,
         legend=legend,
     )
-    axis.set(xlabel=xlabel, ylabel=metric, title=title)
+    axis.set(xlabel=xlabel, ylabel=f"{metric} {METRIC_DIRECTIONS[metric]}", title=title)
     if legend:
         axis.legend(loc="upper left")
     axis.grid(alpha=0.3)
@@ -217,9 +218,6 @@ def main():
                 "ERk",
                 metric == "Disorder",
                 metric=metric,
-            )
-            axis.set_ylabel(
-                f"{metric} {'↓' if metric in {'Disorder', 'SHD'} else '↑'}"
             )
         output = ROOT / "figures" / "varying-k-performance.pdf"
 

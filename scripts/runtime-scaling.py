@@ -112,7 +112,7 @@ def main():
             errorbar="sd",
             ax=axis,
         )
-        axis.set(xlabel=xlabel, ylabel="Runtime (seconds)", title=title)
+        axis.set(xlabel=xlabel, ylabel="Runtime (seconds) ↓", title=title)
         axis.legend(loc="upper left")
         axis.set_yscale("log")
         axis.grid(alpha=0.3)
