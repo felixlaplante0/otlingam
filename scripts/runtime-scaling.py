@@ -8,7 +8,7 @@ import seaborn as sns
 from lingam import DirectLiNGAM, ICALiNGAM
 from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
 
-from utils import DAGMA, gen_laplace
+from _utils import DAGMA, gen_laplace
 
 # Set plot parameters
 plt.rcParams.update(

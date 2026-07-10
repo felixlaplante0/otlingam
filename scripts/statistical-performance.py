@@ -11,7 +11,7 @@ from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
 from otlingam.utils import disorder, f1_score, shd
 from sklearn.exceptions import ConvergenceWarning
 
-from utils import DAGMA, gen_laplace, gen_t
+from _utils import DAGMA, gen_laplace, gen_t
 
 # Set plot parameters
 plt.rcParams.update(
