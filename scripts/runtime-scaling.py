@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from lingam import DirectLiNGAM, ICALiNGAM
-from utils import DAGMA, gen_laplace
-
 from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
+
+from utils import DAGMA, gen_laplace
 
 # Set plot parameters
 plt.rcParams.update(

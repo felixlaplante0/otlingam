@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from lingam import DirectLiNGAM, ICALiNGAM
-from sklearn.exceptions import ConvergenceWarning
-from utils import DAGMA, gen_laplace, gen_t
-
 from otlingam import ExhaustiveOTLiNGAM, GreedyOTLiNGAM, OTICALiNGAM
-from otlingam.utils import disorder
+from otlingam.utils import disorder, f1_score, shd
+from sklearn.exceptions import ConvergenceWarning
+
+from utils import DAGMA, gen_laplace, gen_t
 
 # Set plot parameters
 plt.rcParams.update(
@@ -43,6 +43,7 @@ GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
 N_RUNS = 20
 N_RANGE = (100, 250, 500, 1000, 1500)
 D_RANGE = (4, 6, 8, 10, 12)
+K_RANGE = (1, 2, 3, 4, 5, 6)
 FIXED_N = 1000
 FIXED_D = 7
 HETEROGENEITY_N = 3000
@@ -113,11 +114,41 @@ def heterogeneity_results(graph_type, edges_per_node):
     return pd.DataFrame(results)
 
 
-def plot(axis, results, xlabel, title, legend):
+def k_results():
+    results = []
+    for edges_per_node in K_RANGE:
+        for run in range(N_RUNS):
+            data, weights = gen_laplace(
+                FIXED_N,
+                FIXED_D,
+                edges_per_node,
+                graph_type="er",
+            )
+            for name, factory in MODELS.items():
+                model = (
+                    factory(random_state=run)
+                    if "ICA" in name or "Direct" in name
+                    else factory()
+                )
+                model.fit(data)
+                results.append(
+                    {
+                        "Value": edges_per_node,
+                        "Method": name,
+                        "Disorder": disorder(weights, model.causal_order_),
+                        "SHD": shd(weights, model.adjacency_matrix_),
+                        "F1 score": f1_score(weights, model.adjacency_matrix_),
+                    }
+                )
+
+    return pd.DataFrame(results)
+
+
+def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
     sns.lineplot(
         data=results,
         x="Value",
-        y="Disorder",
+        y=metric,
         hue="Method",
         style="Method",
         markers=True,
@@ -126,7 +157,7 @@ def plot(axis, results, xlabel, title, legend):
         ax=axis,
         legend=legend,
     )
-    axis.set(xlabel=xlabel, ylabel="Disorder", title=title)
+    axis.set(xlabel=xlabel, ylabel=metric, title=title)
     if legend:
         axis.legend(loc="upper left")
     axis.grid(alpha=0.3)
@@ -137,6 +168,7 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--nd", action="store_true")
     mode.add_argument("--heterogeneity", action="store_true")
+    mode.add_argument("--k", action="store_true")
     args = parser.parse_args()
 
     if args.nd:
@@ -159,7 +191,7 @@ def main():
                     row == 0 and column == 0,
                 )
         output = ROOT / "figures" / "varying-nd-disorder.pdf"
-    else:
+    elif args.heterogeneity:
         figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
         figure.suptitle("Disorder under noise heterogeneity")
         for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
@@ -168,11 +200,28 @@ def main():
             plot(
                 axes[column],
                 results,
-                "Maximum degrees of freedom",
+                f"Max df, n = {HETEROGENEITY_N}, d = {HETEROGENEITY_D}",
                 graph_title,
                 column == 0,
             )
         output = ROOT / "figures" / "noise-heterogeneity-disorder.pdf"
+    else:
+        figure, axes = plt.subplots(1, 3, figsize=(21, 5), layout="constrained")
+        figure.suptitle("ERk performance with varying graph density")
+        results = k_results()
+        for axis, metric in zip(axes, ("Disorder", "SHD", "F1 score"), strict=True):
+            plot(
+                axis,
+                results,
+                f"k (edges per node), n = {FIXED_N}, d = {FIXED_D}",
+                "ERk",
+                metric == "Disorder",
+                metric=metric,
+            )
+            axis.set_ylabel(
+                f"{metric} {'↓' if metric in {'Disorder', 'SHD'} else '↑'}"
+            )
+        output = ROOT / "figures" / "varying-k-performance.pdf"
 
     figure.savefig(output)
     plt.show()
