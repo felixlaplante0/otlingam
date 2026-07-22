@@ -96,6 +96,27 @@ plt.show()
 
 ---
 
+## 📊 Reproducing Results
+
+Clone the repository, create and activate a virtual environment, then install the exact package versions used for the paper:
+
+```bash
+python -m pip install -r scripts/requirements.txt
+```
+
+Run the experiment scripts from the repository root with the following options:
+
+```bash
+python scripts/statistical-performance.py --nd
+python scripts/statistical-performance.py --heterogeneity
+python scripts/statistical-performance.py --k
+python scripts/runtime-scaling.py
+```
+
+These commands reproduce `varying-nd-disorder.pdf`, `noise-heterogeneity-disorder.pdf`, `varying-k-performance.pdf`, and `runtime-scaling.pdf` in `figures/`. The paper settings (including random seed 42, sample sizes, dimensions, graph configurations, and run counts) are defined as constants near the top of each script.
+
+---
+
 ## 📖 Learn More
 
 For configuration details and the API reference, visit [otlingam's documentation](https://felixlaplante0.github.io/otlingam).

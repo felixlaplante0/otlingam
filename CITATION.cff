@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use OTLiNGAM, please cite the paper below."
+title: "OTLiNGAM"
+type: software
+authors:
+  - family-names: "Laplante"
+    given-names: "Félix"
+date-released: 2026-07-14
+repository-code: "https://github.com/felixlaplante0/otlingam"
+url: "https://github.com/felixlaplante0/otlingam"
+
+preferred-citation:
+  type: article
+  title: "Contrast-Free ICA and Causal Inference via Wasserstein Distances to the Gaussian"
+  authors:
+    - family-names: "Laplante"
+      given-names: "Félix"
+    - family-names: "Ambroise"
+      given-names: "Christophe"
+    - family-names: "Humbert"
+      given-names: "Pierre"
+  doi: "10.48550/arXiv.2607.12832"
+  date-released: 2026-07-14
+  url: "https://arxiv.org/abs/2607.12832"
