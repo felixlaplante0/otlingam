@@ -83,7 +83,7 @@ def main():
                     )
 
     results = pd.DataFrame(results)
-    figure, axes = plt.subplots(1, 2, figsize=(16, 5), layout="constrained")
+    figure, axes = plt.subplots(1, 2, figsize=(13, 5), layout="constrained")
     for axis, (sweep, xlabel, title) in zip(
         axes,
         (
@@ -99,11 +99,14 @@ def main():
             ),
         ),
     ):
-        sns.barplot(
+        sns.lineplot(
             data=results[results["Sweep"] == sweep],
             x="Value",
             y="Runtime (seconds)",
             hue="Method",
+            style="Method",
+            markers=True,
+            dashes=False,
             errorbar="sd",
             ax=axis,
             legend=axis is axes[0],
