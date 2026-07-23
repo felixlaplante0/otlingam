@@ -39,6 +39,7 @@ MODELS = {
     "ICA-LiNGAM": ICALiNGAM,
     "DAGMA": DAGMA,
 }
+MARKERS = ("o", "s", "D", "^", "v", "P")
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
 N_RUNS = 20
 N_RANGE = (100, 250, 500, 1000, 1500)
@@ -146,19 +147,27 @@ def k_results():
 
 
 def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
+    values = results["Value"].drop_duplicates()
     sns.pointplot(
         data=results,
         x="Value",
         y=metric,
         hue="Method",
-        hue_order=tuple(MODELS),
-        linestyles="none",
         dodge=0.6,
+        linestyles="none",
         errorbar="sd",
         capsize=0.1,
         ax=axis,
         legend=legend,
     )
+    lines = [line for line in axis.lines if len(line.get_xdata()) == len(values)]
+    for line, marker in zip(lines, MARKERS, strict=True):
+        line.set_marker(marker)
+    if legend:
+        for method, marker in zip(MODELS, MARKERS, strict=True):
+            next(line for line in axis.lines if line.get_label() == method).set_marker(
+                marker
+            )
     axis.set(xlabel=xlabel, ylabel=f"{metric} {METRIC_DIRECTIONS[metric]}", title=title)
     if legend:
         axis.legend(loc="upper left")

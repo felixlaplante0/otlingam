@@ -33,6 +33,7 @@ MODELS = {
     "ICA-LiNGAM": ICALiNGAM,
     "DAGMA": DAGMA,
 }
+MARKERS = ("o", "s", "D", "^", "v", "P")
 N_RUNS = 10
 N_RANGE = (250, 500, 1000, 2000, 4000)
 D_RANGE = (6, 8, 10, 12, 16, 20)
@@ -99,20 +100,28 @@ def main():
             ),
         ),
     ):
-        sns.lineplot(
-            data=results[results["Sweep"] == sweep],
+        subset = results[results["Sweep"] == sweep]
+        values = subset["Value"].drop_duplicates()
+        sns.pointplot(
+            data=subset,
             x="Value",
             y="Runtime (seconds)",
             hue="Method",
-            hue_order=tuple(MODELS),
-            style="Method",
-            style_order=tuple(MODELS),
-            markers=True,
-            dashes=False,
+            dodge=0.6,
+            linestyles="-",
             errorbar="sd",
+            capsize=0.1,
             ax=axis,
             legend=axis is axes[0],
         )
+        lines = [line for line in axis.lines if len(line.get_xdata()) == len(values)]
+        for line, marker in zip(lines, MARKERS, strict=True):
+            line.set_marker(marker)
+        if axis is axes[0]:
+            for method, marker in zip(MODELS, MARKERS, strict=True):
+                next(
+                    line for line in axis.lines if line.get_label() == method
+                ).set_marker(marker)
         axis.set(xlabel=xlabel, ylabel="Runtime (seconds) ↓", title=title)
         if axis is axes[0]:
             axis.legend(loc="upper left")

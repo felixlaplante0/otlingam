@@ -115,6 +115,14 @@ python scripts/statistical-performance.py --k
 python scripts/runtime-scaling.py
 ```
 
+Alternatively, run all experiments sequentially on Windows, Linux, or macOS:
+
+```bash
+python run-all.py
+```
+
+The runner uses the active Python interpreter and stops if an experiment fails.
+
 These commands write `varying-nd-disorder.pdf`, `noise-heterogeneity-disorder.pdf`, `varying-k-performance.pdf`, and `runtime-scaling.pdf` to `figures/`. The paper settings (including random seed 42, sample sizes, dimensions, graph configurations, and run counts) are defined as constants near the top of each script.
 
 ---
