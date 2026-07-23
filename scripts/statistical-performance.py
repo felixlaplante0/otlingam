@@ -173,7 +173,7 @@ def main():
     args = parser.parse_args()
 
     if args.nd:
-        figure, axes = plt.subplots(2, 4, figsize=(28, 10), layout="constrained")
+        figure, axes = plt.subplots(2, 4, figsize=(26, 10), layout="constrained")
         figure.suptitle("Disorder with varying sample size and dimension")
         for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
             results = nd_results(graph_type, edges_per_node)
@@ -193,7 +193,7 @@ def main():
                 )
         output = ROOT / "figures" / "varying-nd-disorder.pdf"
     elif args.heterogeneity:
-        figure, axes = plt.subplots(1, 4, figsize=(28, 5), layout="constrained")
+        figure, axes = plt.subplots(1, 4, figsize=(26, 5), layout="constrained")
         figure.suptitle("Disorder under noise heterogeneity")
         for column, (graph_type, edges_per_node) in enumerate(GRAPH_CONFIGURATIONS):
             results = heterogeneity_results(graph_type, edges_per_node)
@@ -201,7 +201,7 @@ def main():
             plot(
                 axes[column],
                 results,
-                f"Max df, n = {FIXED_N}, d = {FIXED_D}",
+                f"Max df, n = {HETEROGENEITY_N}, d = {HETEROGENEITY_D}",
                 graph_title,
                 column == 0,
             )
@@ -221,6 +221,7 @@ def main():
             )
         output = ROOT / "figures" / "varying-k-performance.pdf"
 
+    (ROOT / "figures").mkdir(exist_ok=True)
     figure.savefig(output)
     plt.show()
 

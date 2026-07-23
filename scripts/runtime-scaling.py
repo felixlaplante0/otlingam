@@ -109,12 +109,15 @@ def main():
             dashes=False,
             errorbar="sd",
             ax=axis,
+            legend=axis is axes[0],
         )
         axis.set(xlabel=xlabel, ylabel="Runtime (seconds) ↓", title=title)
-        axis.legend(loc="upper left")
+        if axis is axes[0]:
+            axis.legend(loc="upper left")
         axis.set_yscale("log")
         axis.grid(alpha=0.3)
 
+    (ROOT / "figures").mkdir(exist_ok=True)
     figure.savefig(ROOT / "figures" / "runtime-scaling.pdf")
     plt.show()
 
