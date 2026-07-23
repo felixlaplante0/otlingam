@@ -35,10 +35,11 @@ MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
     "Greedy OT-LiNGAM": GreedyOTLiNGAM,
     "OT-ICA-LiNGAM": OTICALiNGAM,
-    "ICA-LiNGAM": ICALiNGAM,
     "Direct-LiNGAM": DirectLiNGAM,
+    "ICA-LiNGAM": ICALiNGAM,
     "DAGMA": DAGMA,
 }
+MODEL_ORDER = tuple(MODELS)
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
 N_RUNS = 20
 N_RANGE = (100, 250, 500, 1000, 1500)
@@ -146,12 +147,16 @@ def k_results():
 
 
 def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
-    sns.barplot(
+    sns.pointplot(
         data=results,
         x="Value",
         y=metric,
         hue="Method",
+        hue_order=MODEL_ORDER,
+        linestyles="none",
+        dodge=0.6,
         errorbar="sd",
+        capsize=0.1,
         ax=axis,
         legend=legend,
     )

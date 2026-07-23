@@ -27,12 +27,13 @@ np.random.seed(42)
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = {
     "Exhaustive OT-LiNGAM": ExhaustiveOTLiNGAM,
-    "Greedy LO-LiNGAM": GreedyOTLiNGAM,
+    "Greedy OT-LiNGAM": GreedyOTLiNGAM,
     "OT-ICA-LiNGAM": OTICALiNGAM,
-    "ICA-LiNGAM": ICALiNGAM,
     "Direct-LiNGAM": DirectLiNGAM,
+    "ICA-LiNGAM": ICALiNGAM,
     "DAGMA": DAGMA,
 }
+MODEL_ORDER = tuple(MODELS)
 N_RUNS = 10
 N_RANGE = (250, 500, 1000, 2000, 4000)
 D_RANGE = (6, 8, 10, 12, 16, 20)
@@ -104,7 +105,9 @@ def main():
             x="Value",
             y="Runtime (seconds)",
             hue="Method",
+            hue_order=MODEL_ORDER,
             style="Method",
+            style_order=MODEL_ORDER,
             markers=True,
             dashes=False,
             errorbar="sd",
