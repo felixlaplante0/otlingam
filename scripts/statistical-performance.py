@@ -146,14 +146,11 @@ def k_results():
 
 
 def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
-    sns.lineplot(
+    sns.barplot(
         data=results,
         x="Value",
         y=metric,
         hue="Method",
-        style="Method",
-        markers=True,
-        dashes=False,
         errorbar="sd",
         ax=axis,
         legend=legend,

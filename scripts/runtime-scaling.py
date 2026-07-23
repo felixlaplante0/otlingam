@@ -99,14 +99,11 @@ def main():
             ),
         ),
     ):
-        sns.lineplot(
+        sns.barplot(
             data=results[results["Sweep"] == sweep],
             x="Value",
             y="Runtime (seconds)",
             hue="Method",
-            style="Method",
-            markers=True,
-            dashes=False,
             errorbar="sd",
             ax=axis,
             legend=axis is axes[0],
