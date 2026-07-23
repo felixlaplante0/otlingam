@@ -39,7 +39,6 @@ MODELS = {
     "ICA-LiNGAM": ICALiNGAM,
     "DAGMA": DAGMA,
 }
-MODEL_ORDER = tuple(MODELS)
 GRAPH_CONFIGURATIONS = (("er", 2), ("er", 4), ("sf", 2), ("sf", 4))
 N_RUNS = 20
 N_RANGE = (100, 250, 500, 1000, 1500)
@@ -152,7 +151,7 @@ def plot(axis, results, xlabel, title, legend, *, metric="Disorder"):
         x="Value",
         y=metric,
         hue="Method",
-        hue_order=MODEL_ORDER,
+        hue_order=tuple(MODELS),
         linestyles="none",
         dodge=0.6,
         errorbar="sd",
