@@ -13,7 +13,16 @@ def _predict_adaptive_lasso(
     predictors: list[int],
     target: int,
 ) -> np.ndarray:
-    """Estimates pruned regression coefficients with adaptive Lasso."""
+    """Estimates pruned regression coefficients with adaptive Lasso.
+
+    Args:
+        X (np.ndarray): Observation matrix with shape ``(n_samples, n_features)``.
+        predictors (list[int]): Indices of candidate parent variables.
+        target (int): Index of the response variable.
+
+    Returns:
+        np.ndarray: Regression coefficients corresponding to ``predictors``.
+    """
     X_std = StandardScaler().fit_transform(X)
     linear_model = LinearRegression().fit(X_std[:, predictors], X_std[:, target])
     weights = np.abs(linear_model.coef_)
@@ -37,13 +46,14 @@ def _predict_adaptive_lasso(
     return coefficients
 
 
-class _BaseOTLiNGAM(BaseEstimator):
-    """Provides fitted graph state and adaptive-Lasso edge estimation."""
+class _BaseLiNGAM(BaseEstimator):
+    """Provides shared fitted state and edge estimation for LiNGAM estimators.
 
-    @property
-    def causal_order_(self) -> list[int] | None:
-        """Returns the estimated causal order."""
-        return getattr(self, "_causal_order", None)
+    Attributes:
+        causal_order_ (list[int]): Estimated causal ordering from source to sink.
+        adjacency_matrix_ (np.ndarray | None): Estimated weighted adjacency matrix, or
+            ``None`` before fitting.
+    """
 
     @property
     def adjacency_matrix_(self) -> np.ndarray | None:
@@ -51,10 +61,18 @@ class _BaseOTLiNGAM(BaseEstimator):
         return getattr(self, "_adjacency_matrix", None)
 
     def _estimate_adjacency_matrix(self, X: np.ndarray) -> Self:
+        """Estimates graph edge weights for the current causal order.
+
+        Args:
+            X (np.ndarray): Observation matrix with shape ``(n_samples, n_features)``.
+
+        Returns:
+            Self: The fitted estimator with its adjacency matrix set.
+        """
         adjacency_matrix = np.zeros((X.shape[1], X.shape[1]), dtype=np.float64)
-        for position in range(1, len(self._causal_order)):
-            target = self._causal_order[position]
-            predictors = self._causal_order[:position]
+        for position in range(1, len(self.causal_order_)):
+            target = self.causal_order_[position]
+            predictors = self.causal_order_[:position]
             adjacency_matrix[target, predictors] = _predict_adaptive_lasso(
                 X,
                 predictors,

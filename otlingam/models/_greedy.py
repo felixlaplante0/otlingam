@@ -5,10 +5,10 @@ from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ..utils._wasserstein import gauss_quantiles
-from ._base import _BaseOTLiNGAM
+from ._base import _BaseLiNGAM
 
 
-class GreedyOTLiNGAM(_BaseOTLiNGAM):
+class GreedyOTLiNGAM(_BaseLiNGAM):
     """Greedy score-based causal discovery by sequential source removal.
 
     This estimator repeatedly selects the most non-Gaussian standardized residual as the
@@ -22,8 +22,6 @@ class GreedyOTLiNGAM(_BaseOTLiNGAM):
 
     Attributes:
         fit_intercept (bool): Whether to center the data before fitting.
-        _causal_order (list[np.integer] | None): Internal causal ordering. None before
-            fitting.
         _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
             before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
@@ -112,7 +110,7 @@ class GreedyOTLiNGAM(_BaseOTLiNGAM):
             )
             residuals[:, remaining] -= np.outer(source_residual, effects)  # type: ignore
 
-        self._causal_order = list(order)
+        self.causal_order_ = list(order)
         self._estimate_adjacency_matrix(X)
         self.score_ = float(score)
 

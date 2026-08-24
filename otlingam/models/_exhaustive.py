@@ -5,7 +5,7 @@ from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ..utils._wasserstein import gauss_quantiles
-from ._base import _BaseOTLiNGAM
+from ._base import _BaseLiNGAM
 from ._exhaustive_kernel import _sink_dp
 
 _MAX_DP_VARIABLES = 31
@@ -21,7 +21,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveOTLiNGAM(_BaseOTLiNGAM):
+class ExhaustiveOTLiNGAM(_BaseLiNGAM):
     """Exhaustive score-based causal discovery."""
 
     fit_intercept: bool
@@ -54,7 +54,7 @@ class ExhaustiveOTLiNGAM(_BaseOTLiNGAM):
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
         quantiles = gauss_quantiles(n)  # type: ignore
         sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)
-        self._causal_order = list(_causal_order(sinks, d))
+        self.causal_order_ = list(_causal_order(sinks, d))
         self._estimate_adjacency_matrix(X)
 
         if self.fit_intercept:

@@ -7,7 +7,7 @@ from scipy.optimize import linear_sum_assignment  # type: ignore
 from sklearn.utils._param_validation import Interval  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
-from ._base import _BaseOTLiNGAM
+from ._base import _BaseLiNGAM
 
 
 def _search_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
@@ -47,7 +47,7 @@ def _estimate_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
     return causal_order
 
 
-class OTICALiNGAM(_BaseOTLiNGAM):
+class OTICALiNGAM(_BaseLiNGAM):
     """ICA-based LiNGAM using optimal transport ICA.
 
     This estimator learns a directed acyclic graph by estimating an unmixing matrix with
@@ -61,8 +61,6 @@ class OTICALiNGAM(_BaseOTLiNGAM):
     Attributes:
         random_state (int | None): Seed used by OTICA's random number generator.
         max_iter (int): Maximum number of OTICA optimization iterations.
-        _causal_order (list[np.integer] | None): Internal causal ordering. None before
-            fitting.
         _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
             before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
@@ -126,7 +124,12 @@ class OTICALiNGAM(_BaseOTLiNGAM):
         W_estimate = PW_ica / D
         B_estimate = np.eye(len(W_estimate)) - W_estimate
 
-        self._causal_order = _estimate_causal_order(B_estimate)
+        causal_order = _estimate_causal_order(B_estimate)
+        if causal_order is None:
+            raise ValueError(
+                "A causal order could not be estimated from the ICA result."
+            )
+        self.causal_order_ = causal_order
         self._estimate_adjacency_matrix(X)
         self.intercept_ = ica.mean_ - self._adjacency_matrix @ ica.mean_
 
