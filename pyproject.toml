@@ -2,7 +2,7 @@
 name = "otlingam"
 description = "Optimal transport-based causal discovery using Wasserstein non-Gaussianity"
 readme = "README.md"
-urls = { "Source" = "https://github.com/felixlaplante0/otlingam" }
+urls = { "Source" = "https://github.com/felixlaplante0/otlingam", "Documentation" = "https://otlingam.readthedocs.io/en/latest/" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
 license = "GPL-3.0-only"
