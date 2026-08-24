@@ -1,6 +1,7 @@
 """Build the Highway exhaustive core."""
 
 import os
+import platform
 import sys
 from pathlib import Path
 
@@ -16,13 +17,16 @@ COMPILE_ARGS = ["/O2"] if sys.platform == "win32" else [
     "-pthread",
 ]
 LINK_ARGS = [] if sys.platform == "win32" else ["-pthread"]
+CLANG_CL = os.environ.get("CLANG_CL", "").strip('"')
+if CLANG_CL and platform.machine().lower() == "arm64":
+    COMPILE_ARGS.append("--target=arm64-pc-windows-msvc")
+
 
 class ClangBuildExt(build_ext):
     def build_extensions(self):
-        clang_cl = os.environ.get("CLANG_CL")
-        if clang_cl:
+        if CLANG_CL:
             self.compiler.initialize()
-            self.compiler.cc = clang_cl
+            self.compiler.cc = CLANG_CL
         super().build_extensions()
 
 
