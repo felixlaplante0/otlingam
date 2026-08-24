@@ -143,9 +143,3 @@ python run-all.py
 The runner uses the active Python interpreter and stops if an experiment fails.
 
 These commands write `varying-nd-disorder.pdf`, `noise-heterogeneity-disorder.pdf`, `varying-k-performance.pdf`, and `runtime-scaling.pdf` to `figures/`. The paper settings (including random seed 42, sample sizes, dimensions, graph configurations, and run counts) are defined as constants near the top of each script.
-
----
-
-## 📖 Learn More
-
-For configuration details and the API reference, visit [otlingam's documentation](https://felixlaplante0.github.io/otlingam). The [tutorial notebook](examples/tutorial.ipynb) contains a complete runnable example.
