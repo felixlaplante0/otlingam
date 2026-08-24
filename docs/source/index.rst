@@ -94,4 +94,3 @@ API reference
    tutorial
    integration
    modules
-   utils

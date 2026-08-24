@@ -7,4 +7,3 @@ This page provides an overview of the main modules and their members within the 
    :maxdepth: 2
 
    models
-   utils
