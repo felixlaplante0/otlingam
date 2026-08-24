@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/felixlaplante0/otlingam/main/docs/source/_static/otlingam-logo.svg" alt="OTLiNGAM logo" width="128">
 </p>
 
-<h1 align="center">OTLiNGAM</h1>
+<h1 align="center">OT-LiNGAM</h1>
 
 <p align="center"><strong>Optimal Transport LiNGAM.</strong><br>
 Scikit-learn-compatible causal discovery for linear non-Gaussian systems.</p>
