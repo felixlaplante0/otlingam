@@ -1,12 +1,11 @@
 from typing import ClassVar, Self, cast
 
 import numpy as np
-from lingam.base import _BaseLiNGAM  # type: ignore
-from sklearn.base import BaseEstimator  # type: ignore
 from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ..utils._wasserstein import gauss_quantiles
+from ._base import _BaseOTLiNGAM
 from ._exhaustive_kernel import _sink_dp
 
 _MAX_DP_VARIABLES = 31
@@ -22,7 +21,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveOTLiNGAM(_BaseLiNGAM, BaseEstimator):
+class ExhaustiveOTLiNGAM(_BaseOTLiNGAM):
     """Exhaustive score-based causal discovery."""
 
     fit_intercept: bool

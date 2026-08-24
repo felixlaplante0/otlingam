@@ -7,7 +7,7 @@ authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.11"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-dependencies = ["numpy", "scikit-learn", "lingam", "otica"]
+dependencies = ["numpy", "scipy", "scikit-learn", "otica"]
 dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
