@@ -22,7 +22,10 @@ jobs:
       - name: Install package and test dependencies
         run: pip install ".[test]"
       - name: Run tests with coverage
-        run: python -m pytest -v --cov=otlingam --cov-report=term-missing --cov-report=xml
+        run: |
+          cp -r tests /tmp/tests
+          cd /tmp
+          python -m pytest -v tests --cov=otlingam --cov-report=term-missing --cov-report=xml:"$GITHUB_WORKSPACE/coverage.xml"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
