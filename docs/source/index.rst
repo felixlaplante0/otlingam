@@ -42,10 +42,10 @@ Highlights
 
       Estimators follow the scikit-learn conventions and expose causal orders, adjacency matrices, scores, and intercepts.
 
-   .. grid-item-card:: Practical integration
+   .. grid-item-card:: Inspectable results
       :class-card: feature-card
 
-      Use OTLiNGAM in existing preprocessing pipelines and inspect results with the tools you already use.
+      Inspect causal orders, weighted adjacency matrices, scores, and intercepts with familiar NumPy tools.
 
 Why OTLiNGAM?
 -------------
@@ -72,12 +72,6 @@ Learn
 
       Follow a complete synthetic example with plots and a comparison of the estimators.
 
-   .. grid-item-card:: Integration
-      :link: integration
-      :class-card: feature-card
-
-      Connect OTLiNGAM to scikit-learn pipelines and LiNGAM-compatible workflows.
-
 .. raw:: html
 
    <p><a class="tutorial-link" href="https://github.com/felixlaplante0/otlingam/blob/main/examples/tutorial.ipynb">Open the tutorial notebook source on GitHub</a></p>
@@ -92,5 +86,4 @@ API reference
    quickstart
    highway
    tutorial
-   integration
    modules

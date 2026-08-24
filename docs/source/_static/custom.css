@@ -1,7 +1,7 @@
-:root { --ot-accent: #f4512c; }
+:root, html[data-theme="light"], html[data-theme="dark"] { --ot-accent: #f4512c; --pst-color-primary: var(--ot-accent); --pst-color-primary-highlight: var(--ot-accent); --pst-color-link: var(--ot-accent); --pst-color-link-hover: var(--ot-accent); }
 .bd-page-width { max-width: 110rem; }
 .bd-article-container { max-width: none; }
-.hero { position: relative; overflow: hidden; margin: 1rem 0 2rem; padding: clamp(2rem, 6vw, 5rem); border-radius: 1.25rem; color: white; background: radial-gradient(circle at 80% 38%, #e69a83 0, transparent 30%), linear-gradient(135deg, #183b4b, var(--ot-accent)); }
+.hero { position: relative; overflow: hidden; margin: 1rem 0 2rem; padding: clamp(2rem, 6vw, 5rem); border-radius: 1.25rem; color: white; background: radial-gradient(circle at 80% 38%, #e69a83 0, transparent 30%), linear-gradient(135deg, #183b4b, #573650); }
 .hero-logo { display: block; position: absolute; top: 38%; right: clamp(2rem, 10%, 7rem); z-index: 1; width: clamp(7rem, 16vw, 11rem); height: auto; margin: 0; border: 0 !important; outline: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; transform: translateY(-50%); }
 .hero h1 { max-width: 13ch; margin: 0.2rem 0 1rem; color: white; font-size: clamp(2.5rem, 6vw, 4.8rem); line-height: 1.02; }
 .hero > .eyebrow, .hero > h1, .hero > .hero-copy, .hero > .hero-actions { position: relative; z-index: 2; max-width: 52%; }
