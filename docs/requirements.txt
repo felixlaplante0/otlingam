@@ -1,0 +1,4 @@
+myst-nb
+pydata-sphinx-theme
+sphinx
+sphinx-design

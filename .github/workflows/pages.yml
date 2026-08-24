@@ -21,8 +21,8 @@ jobs:
         run: apt-get update && apt-get install -y git
       - name: Install Python dependencies
         run: |
-          pip install sphinx furo
-          pip install .
+          python -m pip install -r docs/requirements.txt
+          python -m pip install .
       - name: Build documentation
         run: sphinx-build -b html docs/source public
       - name: Upload Pages artifact

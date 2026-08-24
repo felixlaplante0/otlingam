@@ -1,114 +1,97 @@
-Optimal Transport LiNGAM
-========================
+OTLiNGAM
+========
 
-**otlingam** is a Python package for causal discovery in linear non-Gaussian structural equation models. It learns causal orders by maximizing the Wasserstein non-Gaussianity of standardized regression residuals and estimates edge weights with adaptive Lasso.
+.. raw:: html
 
-Features
---------
+   <section class="hero">
+     <img class="hero-logo" src="_static/otlingam-logo.svg" alt="OTLiNGAM logo">
+     <p class="eyebrow">CAUSAL DISCOVERY · OPTIMAL TRANSPORT</p>
+     <h1>Find the order hidden in non-Gaussian data.</h1>
+     <p class="hero-copy">OTLiNGAM learns causal structure in linear non-Gaussian models with exact one-dimensional Wasserstein objectives.</p>
+     <div class="hero-actions">
+       <a class="primary" href="quickstart.html">Get started</a>
+       <a href="https://github.com/felixlaplante0/otlingam">View on GitHub</a>
+     </div>
+   </section>
 
-- **Exhaustive causal-order learning**: ``ExhaustiveOTLiNGAM`` uses subset dynamic programming to find a globally optimal order.
-- **Scalable greedy learning**: ``GreedyOTLiNGAM`` constructs an order by sequentially selecting the most non-Gaussian residual.
-- **Optimal transport ICA**: ``OTICALiNGAM`` uses ``OTICA`` with FastICA initialization in the classical ICA-LiNGAM pipeline.
-- **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
-- **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
+.. raw:: html
 
-Method
-------
+   <div class="pypi-card">
+     <div><span class="pypi-kicker">OPEN SOURCE PYTHON PACKAGE</span><strong>Install OTLiNGAM in seconds</strong><p>Works with NumPy, scikit-learn, and the LiNGAM ecosystem.</p></div>
+     <a href="quickstart.html">Read the quick start</a>
+   </div>
 
-The estimators assume the linear structural equation model
-
-.. math::
-
-   X_j = \sum_{k \in \operatorname{Pa}(j)} B_{jk} X_k + \varepsilon_j,
-
-where the graph is acyclic and the structural noises are mutually independent, centered, and have finite nonzero variances. Causal-order identification additionally requires at most one Gaussian structural noise.
-
-For a candidate order :math:`\sigma \in \mathfrak{S}_d`, let :math:`R_j(\sigma)` be the population residual obtained by regressing :math:`X_j` on its predecessors under :math:`\sigma`. The oracle Wasserstein order objective is
-
-.. math::
-
-   G(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( R_j(\sigma) \right), \mathcal{N}(0, 1) \right)^2.
-
-Given observations :math:`X^{(1)}, \ldots, X^{(n)}`, let :math:`\widehat{R}_j^{(i)}(\sigma)` be the ordinary least-squares residual for observation :math:`i`. OTLiNGAM maximizes the empirical order objective
-
-.. math::
-
-   \widehat{\sigma}_n \in \operatorname*{\arg\max}_{\sigma \in \mathfrak{S}_d} \widehat{G}_n(\sigma) = \sum_{j = 1}^{d} \mathcal{W}_2\left( \mathrm{std}\left( \frac{1}{n} \sum_{i = 1}^{n} \delta_{\widehat{R}_j^{(i)}(\sigma)} \right), \mathcal{N}(0, 1) \right)^2.
-
-At the population level, the maximizers of :math:`G` are exactly the topological orders under the stated assumptions. A topological order exposes the independent structural noises as regression residuals, whereas an incorrect order may mix several noises and reduce the total objective. Each empirical one-dimensional Wasserstein distance is evaluated exactly by sorting the standardized residuals and comparing them with the Gaussian reference quantiles.
-
-Algorithms
+Highlights
 ----------
 
-``ExhaustiveOTLiNGAM`` evaluates local residual scores and uses subset dynamic programming to recover a globally optimal order. It evaluates :math:`d 2^{d - 1}` local scores and stores :math:`O(2^d)` states, so its exponential dependence on :math:`d` limits it to smaller systems.
+.. grid:: 1 2 2 4
+   :gutter: 3
 
-``GreedyOTLiNGAM`` repeatedly selects the most non-Gaussian standardized residual, removes its linear effect from the remaining variables, and continues on the residualized system. This avoids subset enumeration and provides a quadratic-time order procedure.
+   .. grid-item-card:: Wasserstein scoring
+      :class-card: feature-card
 
-``OTICALiNGAM`` estimates an unmixing matrix with ``OTICA`` using FastICA initialization, then applies the standard ICA-LiNGAM permutation, scaling, and adjacency estimation steps.
+      Compare standardized residuals with a Gaussian reference through the exact empirical one-dimensional :math:`W_2` distance.
 
-Installation
-------------
+   .. grid-item-card:: Three estimators
+      :class-card: feature-card
 
-Install the package from PyPI:
+      Choose exhaustive dynamic programming, scalable greedy ordering, or OTICA inside the classical ICA-LiNGAM pipeline.
 
-.. code-block:: bash
+   .. grid-item-card:: Familiar API
+      :class-card: feature-card
 
-   pip install otlingam
+      Estimators follow the scikit-learn conventions and expose causal orders, adjacency matrices, scores, and intercepts.
 
-Usage
------
+   .. grid-item-card:: Practical integration
+      :class-card: feature-card
 
-The following example simulates a linear non-Gaussian structural equation model, learns a causal order with ``GreedyOTLiNGAM``, and compares the true and estimated weighted adjacency matrices.
+      Use OTLiNGAM in existing preprocessing pipelines and inspect results with the tools you already use.
 
-.. code-block:: python
-
-   import matplotlib.pyplot as plt
-   import numpy as np
-   from otlingam import GreedyOTLiNGAM
-   from otlingam.utils import disorder
-
-   rng = np.random.default_rng(42)
-   n_samples = 5_000
-   adjacency_matrix = np.array(
-       [
-           [0.0, 0.0, 0.0, 0.0, 0.0],
-           [0.8, 0.0, 0.0, 0.0, 0.0],
-           [0.0, -0.7, 0.0, 0.0, 0.0],
-           [0.5, 0.0, 0.9, 0.0, 0.0],
-           [0.0, -0.6, 0.0, 0.7, 0.0],
-       ]
-   )
-   noise = rng.uniform(-1.0, 1.0, size=(n_samples, 5))
-   X = noise @ np.linalg.inv(np.eye(5) - adjacency_matrix).T
-
-   model = GreedyOTLiNGAM().fit(X)
-
-   print("Estimated causal order:", model.causal_order_)
-   print("Disorder:", disorder(model.causal_order_, adjacency_matrix))
-
-   fig, axes = plt.subplots(1, 2, figsize=(10, 4), layout="constrained")
-   matrices = (adjacency_matrix, model.adjacency_matrix_)
-   titles = ("True adjacency matrix", "Estimated adjacency matrix")
-   for ax, matrix, title in zip(axes, matrices, titles, strict=True):
-       image = ax.imshow(matrix, cmap="RdBu_r", vmin=-1.0, vmax=1.0)
-       ax.set_title(title)
-       ax.set_xlabel("Parent")
-       ax.set_ylabel("Child")
-   fig.colorbar(image, ax=axes, label="Edge weight")
-
-   plt.show()
-
-Configuration
+Why OTLiNGAM?
 -------------
 
-``ExhaustiveOTLiNGAM`` provides global order optimization at an exponential cost in the number of variables. ``GreedyOTLiNGAM`` provides a quadratic-time alternative. Set ``fit_intercept=False`` when the observations are already centered. The default ``fit_intercept=True`` centers the data and exposes the fitted intercepts through ``intercept_``.
+In a linear structural equation model, a correct causal order makes each variable's regression residual recover one independent structural noise. Non-Gaussianity makes those residuals distinguishable from residuals formed by mixing several noises. OTLiNGAM turns that idea into an empirical objective based on sorted residuals and Gaussian quantiles.
 
-Fitted estimators expose ``causal_order_`` from source to sink, ``adjacency_matrix_`` with entry :math:`(j, k)` representing the effect :math:`k \to j`, ``score_`` for score-based estimators, and ``intercept_`` when intercept fitting is enabled.
+The exhaustive estimator searches all subsets and gives a global order optimum for small systems. The greedy estimator trades that guarantee for a quadratic-time procedure. The ICA estimator adds the same Wasserstein-based source estimation to the familiar ICA-LiNGAM workflow.
 
-API Reference
+Learn
+-----
+
+.. grid:: 1 1 1 3
+   :gutter: 3
+
+   .. grid-item-card:: Quick start
+      :link: quickstart
+      :class-card: feature-card
+
+      Install the package, fit an estimator, and understand the mathematical objective.
+
+   .. grid-item-card:: Tutorial notebook
+      :link: tutorial
+      :class-card: feature-card
+
+      Follow a complete synthetic example with plots and a comparison of the estimators.
+
+   .. grid-item-card:: Integration
+      :link: integration
+      :class-card: feature-card
+
+      Connect OTLiNGAM to scikit-learn pipelines and LiNGAM-compatible workflows.
+
+.. raw:: html
+
+   <p><a class="tutorial-link" href="https://github.com/felixlaplante0/otlingam/blob/main/examples/tutorial.ipynb">Open the tutorial notebook source on GitHub</a></p>
+
+API reference
 -------------
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
+   quickstart
+   highway
+   tutorial
+   integration
    modules
+   utils

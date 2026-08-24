@@ -1,6 +1,25 @@
-# 📊 Optimal Transport LiNGAM
+<p align="center">
+  <img src="https://raw.githubusercontent.com/felixlaplante0/otlingam/main/docs/source/_static/otlingam-logo.svg" alt="OTLiNGAM logo" width="128">
+</p>
 
-[![codecov](https://codecov.io/gh/felixlaplante0/otlingam/graph/badge.svg)](https://codecov.io/gh/felixlaplante0/otlingam)
+<h1 align="center">OTLiNGAM</h1>
+
+<p align="center"><strong>Optimal Transport LiNGAM.</strong><br>
+Scikit-learn-compatible causal discovery for linear non-Gaussian systems.</p>
+
+<p align="center">
+  <a href="https://felixlaplante0.github.io/otlingam">Documentation</a> ·
+  <a href="https://pypi.org/project/otlingam/">PyPI</a>
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/otlingam/"><img src="https://img.shields.io/pypi/v/otlingam?logo=pypi&logoColor=white" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/otlingam/"><img src="https://img.shields.io/badge/python-3.11--3.14-blue?logo=python&logoColor=white" alt="Supported Python versions: 3.11–3.14"></a>
+  <a href="https://github.com/felixlaplante0/otlingam/actions/workflows/lint.yml"><img src="https://github.com/felixlaplante0/otlingam/actions/workflows/lint.yml/badge.svg" alt="Lint status"></a>
+  <a href="https://codecov.io/gh/felixlaplante0/otlingam"><img src="https://codecov.io/gh/felixlaplante0/otlingam/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://felixlaplante0.github.io/otlingam"><img src="https://img.shields.io/badge/docs-online-2579a8" alt="Documentation"></a>
+  <a href="https://github.com/felixlaplante0/otlingam/blob/main/LICENSE"><img src="https://img.shields.io/github/license/felixlaplante0/otlingam" alt="License"></a>
+</p>
 
 **otlingam** is a Python package for causal discovery in linear non-Gaussian structural equation models. It learns causal orders by maximizing the Wasserstein non-Gaussianity of standardized regression residuals and estimates edge weights with adaptive Lasso.
 
@@ -129,4 +148,4 @@ These commands write `varying-nd-disorder.pdf`, `noise-heterogeneity-disorder.pd
 
 ## 📖 Learn More
 
-For configuration details and the API reference, visit [otlingam's documentation](https://felixlaplante0.github.io/otlingam).
+For configuration details and the API reference, visit [otlingam's documentation](https://felixlaplante0.github.io/otlingam). The [tutorial notebook](examples/tutorial.ipynb) contains a complete runnable example.
