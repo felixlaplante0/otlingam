@@ -6,20 +6,20 @@
       <stop offset="0%" stop-color="#183B4B"/>
       <stop offset="100%" stop-color="#573650"/>
     </linearGradient>
-    <marker id="arrow" markerWidth="11" markerHeight="11" refX="0" refY="5.5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0,0 L10,5.5 L0,11 Z" fill="#F5EBDD"/>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="0" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L15,8 L0,16 Z" fill="#F5EBDD"/>
     </marker>
   </defs>
   <rect width="256" height="256" rx="60" ry="60" fill="url(#background)"/>
-  <g fill="none" stroke="#F5EBDD" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)">
-    <path d="M128,54 L88,104"/>
-    <path d="M128,54 L168,104"/>
-    <path d="M184,124 L143,180"/>
+  <g fill="none" stroke="#F5EBDD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M128,58 L93,102"/>
+    <path d="M128,58 L163,102"/>
+    <path d="M184,128 L149,173"/>
   </g>
   <g stroke="#F5EBDD" stroke-width="5">
-    <circle cx="128" cy="54" r="13" fill="#2563EB"/>
-    <circle cx="72" cy="124" r="13" fill="#8B5CF6"/>
-    <circle cx="184" cy="124" r="13" fill="#F4512C"/>
-    <circle cx="128" cy="200" r="13" fill="#14B88A"/>
+    <circle cx="128" cy="58" r="15" fill="#2563EB"/>
+    <circle cx="72" cy="128" r="15" fill="#8B5CF6"/>
+    <circle cx="184" cy="128" r="15" fill="#F4512C"/>
+    <circle cx="128" cy="198" r="15" fill="#14B88A"/>
   </g>
 </svg>
