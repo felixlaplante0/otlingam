@@ -1,13 +1,13 @@
-OTLiNGAM
-========
+OT-LiNGAM
+=========
 
 .. raw:: html
 
    <section class="hero">
-     <img class="hero-logo" src="_static/otlingam-logo.svg" alt="OTLiNGAM logo">
+     <img class="hero-logo" src="_static/otlingam-logo.svg" alt="OT-LiNGAM logo">
      <p class="eyebrow">CAUSAL DISCOVERY · OPTIMAL TRANSPORT</p>
      <h1>Find the order hidden in non-Gaussian data.</h1>
-     <p class="hero-copy">OTLiNGAM learns causal structure in linear non-Gaussian models with exact one-dimensional Wasserstein objectives.</p>
+     <p class="hero-copy">OT-LiNGAM learns causal structure in linear non-Gaussian models with exact one-dimensional Wasserstein objectives.</p>
      <div class="hero-actions">
        <a class="primary" href="quickstart.html">Get started</a>
        <a href="https://github.com/felixlaplante0/otlingam">View on GitHub</a>
@@ -17,7 +17,7 @@ OTLiNGAM
 .. raw:: html
 
    <div class="pypi-card">
-     <div><span class="pypi-kicker">OPEN SOURCE PYTHON PACKAGE</span><strong>Install OTLiNGAM in seconds</strong><p>Works with NumPy, scikit-learn, and the LiNGAM ecosystem.</p></div>
+     <div><span class="pypi-kicker">OPEN SOURCE PYTHON PACKAGE</span><strong>Install OT-LiNGAM in seconds</strong><p>Works with NumPy, scikit-learn, and the LiNGAM ecosystem.</p></div>
      <a href="quickstart.html">Read the quick start</a>
    </div>
 
@@ -47,10 +47,10 @@ Highlights
 
       Inspect causal orders, weighted adjacency matrices, scores, and intercepts with familiar NumPy tools.
 
-Why OTLiNGAM?
+Why OT-LiNGAM?
 -------------
 
-In a linear structural equation model, a correct causal order makes each variable's regression residual recover one independent structural noise. Non-Gaussianity makes those residuals distinguishable from residuals formed by mixing several noises. OTLiNGAM turns that idea into an empirical objective based on sorted residuals and Gaussian quantiles.
+In a linear structural equation model, a correct causal order makes each variable's regression residual recover one independent structural noise. Non-Gaussianity makes those residuals distinguishable from residuals formed by mixing several noises. OT-LiNGAM turns that idea into an empirical objective based on sorted residuals and Gaussian quantiles.
 
 The exhaustive estimator searches all subsets and gives a global order optimum for small systems. The greedy estimator trades that guarantee for a quadratic-time procedure. The ICA estimator adds the same Wasserstein-based source estimation to the familiar ICA-LiNGAM workflow.
 
