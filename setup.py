@@ -10,15 +10,12 @@ from setuptools import Extension, setup
 ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
 
-if sys.platform == "win32":
-    COMPILE_ARGS = ["/O2", "/std:c++17"]
-    LINK_ARGS = []
-elif sys.platform == "linux":
-    COMPILE_ARGS = ["-O3", "-std=c++17", "-fopenmp"]
-    LINK_ARGS = ["-fopenmp"]
-else:
-    COMPILE_ARGS = ["-O3", "-std=c++17", "-pthread"]
-    LINK_ARGS = ["-pthread"]
+COMPILE_ARGS = ["/O2", "/std:c++17"] if sys.platform == "win32" else [
+    "-O3",
+    "-std=c++17",
+    "-pthread",
+]
+LINK_ARGS = [] if sys.platform == "win32" else ["-pthread"]
 
 setup(
     ext_modules=[
@@ -33,6 +30,10 @@ setup(
                 "highway/hwy/contrib/sort/vqsort_f64a.cc",
                 "highway/hwy/contrib/sort/vqsort_have.cc",
                 "highway/hwy/aligned_allocator.cc",
+                "highway/hwy/contrib/thread_pool/thread_pool.cc",
+                "highway/hwy/contrib/thread_pool/topology.cc",
+                "highway/hwy/profiler.cc",
+                "highway/hwy/timer.cc",
             ],
             include_dirs=[np.get_include(), pybind11.get_include(), str(HIGHWAY)],
             extra_compile_args=COMPILE_ARGS,

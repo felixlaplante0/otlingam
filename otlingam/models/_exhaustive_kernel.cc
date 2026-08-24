@@ -7,6 +7,9 @@
 #include <limits>
 #include <vector>
 
+#include "hwy/aligned_allocator.h"
+#include "hwy/contrib/thread_pool/thread_pool.h"
+
 namespace py = pybind11;
 
 namespace otlingam {
@@ -207,23 +210,51 @@ py::tuple sink_dp(const Array &X, const Array &cov, const Array &quantiles, int 
     const auto *cov_data = static_cast<const double *>(cov_view.ptr);
     const auto *quantile_data = static_cast<const double *>(quantile_view.ptr);
 
+    hwy::AlignedUniquePtr<hwy::ThreadPool> pool;
+    const std::size_t max_workers = hwy::ThreadPool::MaxThreads();
+    if (max_workers > 0) {
+        pool = hwy::MakeUniqueAligned<hwy::ThreadPool>(max_workers);
+        if (!pool) {
+            throw std::bad_alloc();
+        }
+        pool->SetWaitMode(hwy::PoolWaitMode::kSpin);
+    }
+
     {
         py::gil_scoped_release release;
         for (int size = 1; size <= d; ++size) {
             const int start = offset_data[size];
             const int end = offset_data[size + 1];
-            #pragma omp parallel for schedule(static)
-            for (int index = start; index < end; ++index) {
-                process_mask(
-                    X_data,
-                    cov_data,
-                    quantile_data,
-                    score_data,
-                    sink_data,
-                    mask_data[index],
-                    n,
-                    d);
+            const auto run = [&](const int begin, const int finish) {
+                for (int index = begin; index < finish; ++index) {
+                    process_mask(
+                        X_data,
+                        cov_data,
+                        quantile_data,
+                        score_data,
+                        sink_data,
+                        mask_data[index],
+                        n,
+                        d);
+                }
+            };
+
+            if (!pool || end - start <= 1) {
+                run(start, end);
+                continue;
             }
+
+            const std::size_t count = static_cast<std::size_t>(end - start);
+            auto &thread_pool = *pool;
+            const std::size_t num_tasks = std::min(
+                count, 4 * thread_pool.NumWorkers());
+            const std::size_t items_per_task =
+                (count + num_tasks - 1) / num_tasks;
+            thread_pool.Run(0, num_tasks, [&](const std::uint64_t task, std::size_t) {
+                const std::size_t begin = static_cast<std::size_t>(task) * items_per_task;
+                const std::size_t finish = std::min(begin + items_per_task, count);
+                run(start + static_cast<int>(begin), start + static_cast<int>(finish));
+            });
         }
     }
     return py::make_tuple(std::move(sinks), score_data[n_states - 1]);
