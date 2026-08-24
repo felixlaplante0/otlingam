@@ -17,7 +17,6 @@ COMPILE_ARGS = ["/O2"] if sys.platform == "win32" else [
 LINK_ARGS = [] if sys.platform == "win32" else ["-pthread"]
 
 setup(
-    packages=["otlingam", "otlingam.models", "otlingam.utils"],
     ext_modules=[
         Pybind11Extension(
             "otlingam.models._exhaustive_kernel",
