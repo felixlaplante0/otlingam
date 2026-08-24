@@ -1,5 +1,6 @@
 """Build the Highway exhaustive core."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -15,6 +16,15 @@ COMPILE_ARGS = ["/O2"] if sys.platform == "win32" else [
     "-pthread",
 ]
 LINK_ARGS = [] if sys.platform == "win32" else ["-pthread"]
+
+class ClangBuildExt(build_ext):
+    def build_extensions(self):
+        clang_cl = os.environ.get("OTLINGAM_CLANG_CL")
+        if clang_cl:
+            self.compiler.initialize()
+            self.compiler.cc = clang_cl
+        super().build_extensions()
+
 
 setup(
     ext_modules=[
@@ -40,5 +50,5 @@ setup(
             cxx_std=17,
         ),
     ],
-    cmdclass={"build_ext": build_ext},
+    cmdclass={"build_ext": ClangBuildExt},
 )
