@@ -7,10 +7,20 @@ from scipy.optimize import linear_sum_assignment  # type: ignore
 from sklearn.utils._param_validation import Interval  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
-from ._base import _BaseLiNGAM
+from ._base import BaseLiNGAM
 
 
 def _search_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
+    """Finds a causal order in a matrix with an exact triangular structure.
+
+    Args:
+        matrix (np.ndarray): Square coefficient matrix whose zero rows identify source
+            variables.
+
+    Returns:
+        list[np.integer] | None: Causal order from source to sink, or ``None`` when no
+        complete order exists.
+    """
     causal_order = []
     variable_count = matrix.shape[0]
     original_indices = np.arange(matrix.shape[0])
@@ -31,6 +41,18 @@ def _search_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
 
 
 def _estimate_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
+    """Estimates a causal order by progressively pruning weak coefficients.
+
+    The function modifies ``matrix`` in place while searching for an approximately
+    lower-triangular representation.
+
+    Args:
+        matrix (np.ndarray): Square coefficient matrix estimated by ICA.
+
+    Returns:
+        list[np.integer] | None: Causal order from source to sink, or ``None`` when no
+        complete order can be recovered.
+    """
     positions = np.argsort(np.abs(matrix), axis=None)
     positions = np.column_stack(np.unravel_index(positions, matrix.shape))
     initial_zeros = matrix.shape[0] * (matrix.shape[0] + 1) // 2
@@ -47,7 +69,7 @@ def _estimate_causal_order(matrix: np.ndarray) -> list[np.integer] | None:
     return causal_order
 
 
-class OTICALiNGAM(_BaseLiNGAM):
+class OTICALiNGAM(BaseLiNGAM):
     """ICA-based LiNGAM using optimal transport ICA.
 
     This estimator learns a directed acyclic graph by estimating an unmixing matrix with
@@ -61,8 +83,6 @@ class OTICALiNGAM(_BaseLiNGAM):
     Attributes:
         random_state (int | None): Seed used by OTICA's random number generator.
         max_iter (int): Maximum number of OTICA optimization iterations.
-        _adjacency_matrix (np.ndarray | None): Internal weighted adjacency matrix. None
-            before fitting.
         causal_order_ (list[np.integer]): Learned causal order from source to sink.
         adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
         intercept_ (np.ndarray): Intercepts of the structural equations.
@@ -131,6 +151,6 @@ class OTICALiNGAM(_BaseLiNGAM):
             )
         self.causal_order_ = causal_order
         self._estimate_adjacency_matrix(X)
-        self.intercept_ = ica.mean_ - self._adjacency_matrix @ ica.mean_
+        self.intercept_ = ica.mean_ - self.adjacency_matrix_ @ ica.mean_
 
         return self

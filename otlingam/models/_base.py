@@ -46,19 +46,13 @@ def _predict_adaptive_lasso(
     return coefficients
 
 
-class _BaseLiNGAM(BaseEstimator):
+class BaseLiNGAM(BaseEstimator):
     """Provides shared fitted state and edge estimation for LiNGAM estimators.
 
     Attributes:
         causal_order_ (list[int]): Estimated causal ordering from source to sink.
-        adjacency_matrix_ (np.ndarray | None): Estimated weighted adjacency matrix, or
-            ``None`` before fitting.
+        adjacency_matrix_ (np.ndarray): Estimated weighted adjacency matrix.
     """
-
-    @property
-    def adjacency_matrix_(self) -> np.ndarray | None:
-        """Returns the estimated weighted adjacency matrix."""
-        return getattr(self, "_adjacency_matrix", None)
 
     def _estimate_adjacency_matrix(self, X: np.ndarray) -> Self:
         """Estimates graph edge weights for the current causal order.
@@ -78,6 +72,6 @@ class _BaseLiNGAM(BaseEstimator):
                 predictors,
                 target,
             )
-        self._adjacency_matrix = adjacency_matrix
+        self.adjacency_matrix_ = adjacency_matrix
 
         return self

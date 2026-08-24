@@ -5,13 +5,22 @@ from sklearn.utils._param_validation import validate_params  # type: ignore
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ..utils._wasserstein import gauss_quantiles
-from ._base import _BaseLiNGAM
+from ._base import BaseLiNGAM
 from ._exhaustive_kernel import _sink_dp
 
 _MAX_DP_VARIABLES = 31
 
 
 def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
+    """Reconstructs a causal order from dynamic-programming sink choices.
+
+    Args:
+        sinks (np.ndarray): Best sink index for each encoded variable subset.
+        d (int): Number of variables in the graph.
+
+    Returns:
+        np.ndarray: Causal order from source to sink.
+    """
     order = np.empty(d, dtype=int)
     mask = (1 << d) - 1
     for i in range(d):
@@ -21,7 +30,7 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
     return order[::-1]
 
 
-class ExhaustiveOTLiNGAM(_BaseLiNGAM):
+class ExhaustiveOTLiNGAM(BaseLiNGAM):
     """Exhaustive score-based causal discovery."""
 
     fit_intercept: bool
@@ -58,7 +67,7 @@ class ExhaustiveOTLiNGAM(_BaseLiNGAM):
         self._estimate_adjacency_matrix(X)
 
         if self.fit_intercept:
-            self.intercept_ = shift - self._adjacency_matrix @ shift
+            self.intercept_ = shift - self.adjacency_matrix_ @ shift
         else:
             self.__dict__.pop("intercept_", None)
         return self
