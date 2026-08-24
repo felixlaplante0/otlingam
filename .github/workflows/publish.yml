@@ -26,7 +26,7 @@ jobs:
             clang: true
           - name: Windows ARM64
             runner: windows-11-arm
-            clang: false
+            clang: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
