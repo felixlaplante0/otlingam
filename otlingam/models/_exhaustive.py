@@ -36,12 +36,34 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
 
 
 class ExhaustiveOTLiNGAM(BaseLiNGAM):
-    """Exhaustive score-based causal discovery.
+    """Exhaustive score-based causal discovery by subset dynamic programming.
+
+    This estimator searches over all subsets of variables to find the causal order that
+    maximizes the sum of squared Wasserstein scores. Once the ordering is recovered,
+    edge weights are estimated using adaptive lasso regression.
+
+    Data preprocessing settings:
+        - ``fit_intercept``: Whether to center the data before fitting. Centering also
+          enables estimation of an intercept for each variable.
+
+    Optimization settings:
+        - ``n_jobs``: Number of threads used by the dynamic-programming search. ``None``
+          uses one thread and ``-1`` uses all available threads.
 
     Attributes:
-        fit_intercept (bool): Whether to estimate an intercept.
-        n_jobs (int | None): Number of threads. ``None`` uses one thread and ``-1``
-            uses all available threads.
+        fit_intercept (bool): Whether to center the data before fitting.
+        n_jobs (int | None): Number of threads used by the dynamic-programming search.
+        causal_order_ (list[np.integer]): Learned causal order from source to sink.
+        adjacency_matrix_ (np.ndarray): Learned weighted adjacency matrix.
+        intercept_ (np.ndarray): Intercepts of the regression models. Available only
+            when ``fit_intercept`` is ``True``.
+        score_ (float): Sum of the selected squared Wasserstein scores.
+
+    Examples:
+        >>> from otlingam import ExhaustiveOTLiNGAM
+        >>> model = ExhaustiveOTLiNGAM(fit_intercept=True, n_jobs=-1)
+        >>> model.fit(X)
+        >>> model.causal_order_
     """
 
     fit_intercept: bool
@@ -58,6 +80,15 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
     }
 
     def __init__(self, fit_intercept: bool = True, *, n_jobs: int | None = -1):
+        """Initializes ExhaustiveOTLiNGAM.
+
+        Args:
+            fit_intercept (bool, optional): Whether to center the data. Defaults to
+                True.
+            n_jobs (int | None, optional): Number of threads used by the
+                dynamic-programming search. ``None`` uses one thread and ``-1`` uses
+                all available threads. Defaults to -1.
+        """
         super().__init__()
         self.fit_intercept = fit_intercept
         self.n_jobs = n_jobs
@@ -67,6 +98,18 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
         prefer_skip_nested_validation=True,
     )
     def fit(self, X: np.typing.ArrayLike, y: None = None) -> Self:  # noqa: ARG002
+        """Fits the ExhaustiveOTLiNGAM algorithm.
+
+        Args:
+            X (np.typing.ArrayLike): Input data.
+            y (None, optional): Ignored. Defaults to None.
+
+        Returns:
+            ExhaustiveOTLiNGAM: The fitted estimator.
+
+        Raises:
+            ValueError: If ``X`` contains more than 31 variables.
+        """
         self._validate_params()
         X = np.asarray(validate_data(self, X, dtype=np.float64))  # type: ignore
         n, d = X.shape
