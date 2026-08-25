@@ -23,10 +23,8 @@ jobs:
             runner: macos-14
           - name: Windows x86-64
             runner: windows-latest
-            clang: true
           - name: Windows ARM64
             runner: windows-11-arm
-            clang: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,8 +39,6 @@ jobs:
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_SOURCES: tests
           CIBW_TEST_COMMAND: "python -m pytest tests"
-          CIBW_BEFORE_ALL_WINDOWS: ${{ matrix.clang && 'choco install llvm -y --no-progress' || '' }}
-          CIBW_ENVIRONMENT_WINDOWS: ${{ matrix.clang && 'CLANG_CL="C:/Program Files/LLVM/bin/clang-cl.exe"' || '' }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:

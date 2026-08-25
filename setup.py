@@ -1,12 +1,10 @@
 """Build the Highway exhaustive core."""
 
-import os
-import platform
 import sys
 from pathlib import Path
 
 import numpy as np
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
 
 ROOT = Path(__file__).resolve().parent
@@ -17,19 +15,6 @@ COMPILE_ARGS = ["/O2"] if sys.platform == "win32" else [
     "-pthread",
 ]
 LINK_ARGS = [] if sys.platform == "win32" else ["-pthread"]
-CLANG_CL = os.environ.get("CLANG_CL", "").strip('"')
-if CLANG_CL and platform.machine().lower() == "arm64":
-    COMPILE_ARGS.append("--target=arm64-pc-windows-msvc")
-
-
-class ClangBuildExt(build_ext):
-    def build_extensions(self):
-        if CLANG_CL:
-            self.compiler.initialize()
-            self.compiler.cc = CLANG_CL
-        super().build_extensions()
-
-
 setup(
     ext_modules=[
         Pybind11Extension(
@@ -54,5 +39,4 @@ setup(
             cxx_std=17,
         ),
     ],
-    cmdclass={"build_ext": ClangBuildExt},
 )
