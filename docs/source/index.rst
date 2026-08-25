@@ -84,5 +84,6 @@ API reference
    :hidden:
 
    quickstart
+   highway
    tutorial
    modules

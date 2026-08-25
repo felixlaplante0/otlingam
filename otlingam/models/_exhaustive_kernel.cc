@@ -5,8 +5,10 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
-#include <thread>
 #include <vector>
+
+#include "hwy/aligned_allocator.h"
+#include "hwy/contrib/thread_pool/thread_pool.h"
 
 namespace py = pybind11;
 
@@ -213,8 +215,15 @@ py::tuple sink_dp(
     const auto *cov_data = static_cast<const double *>(cov_view.ptr);
     const auto *quantile_data = static_cast<const double *>(quantile_view.ptr);
 
-    n_jobs = n_jobs == 0 ? std::thread::hardware_concurrency() : n_jobs;
-    n_jobs = std::max<std::size_t>(1, n_jobs);
+    hwy::AlignedUniquePtr<hwy::ThreadPool> pool;
+    n_jobs = n_jobs == 0 ? 1 + hwy::ThreadPool::MaxThreads() : n_jobs;
+    if (n_jobs > 1) {
+        pool = hwy::MakeUniqueAligned<hwy::ThreadPool>(n_jobs - 1);
+        if (!pool) {
+            throw std::bad_alloc();
+        }
+        pool->SetWaitMode(hwy::PoolWaitMode::kSpin);
+    }
 
     {
         py::gil_scoped_release release;
@@ -235,26 +244,22 @@ py::tuple sink_dp(
                 }
             };
 
-            if (n_jobs == 1 || end - start <= 1) {
+            if (!pool || end - start <= 1) {
                 run(start, end);
                 continue;
             }
 
             const std::size_t count = static_cast<std::size_t>(end - start);
-            const std::size_t num_tasks = std::min(count, n_jobs);
+            auto &thread_pool = *pool;
+            const std::size_t num_tasks = std::min(
+                count, 4 * thread_pool.NumWorkers());
             const std::size_t items_per_task =
                 (count + num_tasks - 1) / num_tasks;
-            std::vector<std::thread> workers;
-            workers.reserve(num_tasks - 1);
-            for (std::size_t task = 1; task < num_tasks; ++task) {
-                workers.emplace_back([&, task] {
-                const std::size_t begin = task * items_per_task;
+            thread_pool.Run(0, num_tasks, [&](const std::uint64_t task, std::size_t) {
+                const std::size_t begin = static_cast<std::size_t>(task) * items_per_task;
                 const std::size_t finish = std::min(begin + items_per_task, count);
                 run(start + static_cast<int>(begin), start + static_cast<int>(finish));
-                });
-            }
-            run(start, start + static_cast<int>(items_per_task));
-            for (auto &worker : workers) worker.join();
+            });
         }
     }
     return py::make_tuple(std::move(sinks), score_data[n_states - 1]);
