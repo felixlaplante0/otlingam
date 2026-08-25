@@ -15,6 +15,10 @@ namespace py = pybind11;
 namespace otlingam {
 
 void sort_values(double *values, size_t size) noexcept;
+double sum_squared_differences(
+    const double *values,
+    const double *quantiles,
+    int size) noexcept;
 
 int popcount(int mask) noexcept {
     int result = 0;
@@ -126,16 +130,11 @@ double score(
     solve_coefficients(A, k, coef);
     compute_residuals(X, n, d, target, mask, coef, residuals.data());
     const double scale = std::sqrt(rss / n);
-    double result = 0.0;
     for (double &value : residuals) {
         value /= scale;
     }
     sort_values(residuals.data(), residuals.size());
-    for (int i = 0; i < n; ++i) {
-        const double delta = residuals[i] - quantiles[i];
-        result += delta * delta;
-    }
-    return result / n;
+    return sum_squared_differences(residuals.data(), quantiles, n) / n;
 }
 
 void process_mask(

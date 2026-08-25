@@ -54,6 +54,7 @@ setup(
             [
                 "otlingam/models/_exhaustive_kernel.cc",
                 "otlingam/models/_exhaustive_sort.cc",
+                "otlingam/models/_exhaustive_score.cc",
                 "highway/hwy/abort.cc",
                 "highway/hwy/targets.cc",
                 "highway/hwy/contrib/sort/vqsort.cc",
