@@ -18,7 +18,7 @@ void sort_values(double *values, size_t size) noexcept;
 double sum_squared_differences(
     const double *values,
     const double *quantiles,
-    int size) noexcept;
+    int size);
 
 int popcount(int mask) noexcept {
     int result = 0;

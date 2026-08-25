@@ -10,7 +10,7 @@ namespace HWY_NAMESPACE {
 double sum_squared_differences_impl(
     const double *values,
     const double *quantiles,
-    int size) noexcept {
+    int size) {
   const hwy::HWY_NAMESPACE::ScalableTag<double> d;
   auto sum = hwy::HWY_NAMESPACE::Zero(d);
   int i = 0;
@@ -40,7 +40,7 @@ HWY_EXPORT(sum_squared_differences_impl);
 double sum_squared_differences(
     const double *values,
     const double *quantiles,
-    int size) noexcept {
+    int size) {
   return HWY_DYNAMIC_DISPATCH(sum_squared_differences_impl)(
       values, quantiles, size);
 }

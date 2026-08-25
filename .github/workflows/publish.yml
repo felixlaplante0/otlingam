@@ -24,12 +24,14 @@ jobs:
           - name: Windows x86-64
             runner: windows-latest
             msystem: UCRT64
+            toolchain_bin: ucrt64
             toolchain: mingw-w64-ucrt-x86_64-toolchain
             cc: gcc
             cxx: g++
           - name: Windows ARM64
             runner: windows-11-arm
             msystem: CLANGARM64
+            toolchain_bin: clangarm64
             toolchain: mingw-w64-clang-aarch64-toolchain
             cc: clang
             cxx: clang++
@@ -40,11 +42,16 @@ jobs:
           submodules: recursive
       - name: Set up MinGW toolchain
         if: startsWith(matrix.name, 'Windows')
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
           update: true
           install: ${{ matrix.toolchain }}
+      - name: Add MinGW to PATH
+        if: startsWith(matrix.name, 'Windows')
+        shell: pwsh
+        run: Add-Content $env:GITHUB_PATH "${{ steps.msys2.outputs.msys2-location }}\${{ matrix.toolchain_bin }}\bin"
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.1.1
         env:
