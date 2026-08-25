@@ -1,7 +1,12 @@
+from numbers import Integral
 from typing import ClassVar, Self, cast
 
 import numpy as np
-from sklearn.utils._param_validation import validate_params  # type: ignore
+from sklearn.utils._param_validation import (  # type: ignore
+    Interval,
+    Options,
+    validate_params,
+)
 from sklearn.utils.validation import validate_data  # type: ignore
 
 from ..utils._wasserstein import gauss_quantiles
@@ -31,16 +36,31 @@ def _causal_order(sinks: np.ndarray, d: int) -> np.ndarray:
 
 
 class ExhaustiveOTLiNGAM(BaseLiNGAM):
-    """Exhaustive score-based causal discovery."""
+    """Exhaustive score-based causal discovery.
+
+    Attributes:
+        fit_intercept (bool): Whether to estimate an intercept.
+        n_jobs (int | None): Number of threads. ``None`` uses one thread and ``-1``
+            uses all available threads.
+    """
 
     fit_intercept: bool
+    n_jobs: int | None
     intercept_: np.ndarray
     score_: float
-    _parameter_constraints: ClassVar[dict] = {"fit_intercept": ["boolean"]}
+    _parameter_constraints: ClassVar[dict] = {
+        "fit_intercept": ["boolean"],
+        "n_jobs": [
+            Options(Integral, {-1}),
+            Interval(Integral, 1, None, closed="left"),
+            None,
+        ],
+    }
 
-    def __init__(self, fit_intercept: bool = True):
+    def __init__(self, fit_intercept: bool = True, *, n_jobs: int | None = -1):
         super().__init__()
         self.fit_intercept = fit_intercept
+        self.n_jobs = n_jobs
 
     @validate_params(
         {"X": ["array-like"], "y": [None]},
@@ -62,7 +82,8 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
 
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
         quantiles = gauss_quantiles(n)  # type: ignore
-        sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d)
+        n_jobs = 1 if self.n_jobs is None else 0 if self.n_jobs == -1 else self.n_jobs
+        sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d, n_jobs)
         self.causal_order_ = list(_causal_order(sinks, d))
         self._estimate_adjacency_matrix(X)
 

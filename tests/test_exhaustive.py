@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from sklearn.utils._param_validation import InvalidParameterError
 
 from otlingam import ExhaustiveOTLiNGAM
 from otlingam.models._exhaustive import _MAX_DP_VARIABLES
@@ -31,3 +32,17 @@ def test_variable_limit():
 
     with pytest.raises(ValueError, match="at most"):
         ExhaustiveOTLiNGAM().fit(X)
+
+
+def test_n_jobs():
+    """Matches serial and automatic threading and rejects zero threads."""
+    X, _ = linear_dag()
+    serial = ExhaustiveOTLiNGAM(n_jobs=1).fit(X)
+    automatic = ExhaustiveOTLiNGAM(n_jobs=-1).fit(X)
+
+    assert automatic.score_ == pytest.approx(serial.score_)
+    assert automatic.causal_order_ == serial.causal_order_
+    with pytest.raises(InvalidParameterError):
+        ExhaustiveOTLiNGAM(n_jobs=0).fit(X)
+    with pytest.raises(TypeError):
+        ExhaustiveOTLiNGAM(True, 1)

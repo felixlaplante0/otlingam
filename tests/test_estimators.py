@@ -16,7 +16,7 @@ def test_score_estimator_fit(estimator_class, fit_intercept):
     X, adjacency_matrix = linear_dag()
     estimator = estimator_class(fit_intercept=fit_intercept)
 
-    assert clone(estimator).get_params() == {"fit_intercept": fit_intercept}
+    assert clone(estimator).get_params() == estimator.get_params()
     assert estimator.fit(X) is estimator
     assert sorted(estimator.causal_order_) == [0, 1, 2]
     assert estimator.adjacency_matrix_.shape == adjacency_matrix.shape

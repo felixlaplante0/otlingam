@@ -170,7 +170,12 @@ void process_mask(
 
 using Array = py::array_t<double, py::array::c_style | py::array::forcecast>;
 
-py::tuple sink_dp(const Array &X, const Array &cov, const Array &quantiles, int d) {
+py::tuple sink_dp(
+    const Array &X,
+    const Array &cov,
+    const Array &quantiles,
+    int d,
+    std::size_t n_jobs) {
     const int n_states = 1 << d;
     const int n = static_cast<int>(X.shape(0));
     py::array_t<std::int32_t> masks(n_states - 1);
@@ -211,9 +216,9 @@ py::tuple sink_dp(const Array &X, const Array &cov, const Array &quantiles, int 
     const auto *quantile_data = static_cast<const double *>(quantile_view.ptr);
 
     hwy::AlignedUniquePtr<hwy::ThreadPool> pool;
-    const std::size_t max_workers = hwy::ThreadPool::MaxThreads();
-    if (max_workers > 0) {
-        pool = hwy::MakeUniqueAligned<hwy::ThreadPool>(max_workers);
+    n_jobs = n_jobs == 0 ? 1 + hwy::ThreadPool::MaxThreads() : n_jobs;
+    if (n_jobs > 1) {
+        pool = hwy::MakeUniqueAligned<hwy::ThreadPool>(n_jobs - 1);
         if (!pool) {
             throw std::bad_alloc();
         }
