@@ -33,6 +33,7 @@ Scikit-learn-compatible causal discovery for linear non-Gaussian systems.</p>
 - **Exact empirical criterion**: Computes one-dimensional Wasserstein scores directly from ordered residuals and Gaussian quantiles.
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
 - **scikit-learn integration**: Native ``BaseEstimator`` integration with familiar ``fit``, ``get_params``, ``set_params``, and ``clone`` support.
+- **Fast residual sorting**: The exhaustive estimator uses the portable `djbsort` submodule, selecting AVX2 on x86 and the corresponding ARM implementation on ARM64.
 
 ---
 
