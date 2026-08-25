@@ -1,5 +1,6 @@
 """Build the Highway and djbsort exhaustive core."""
 
+import platform
 import sys
 from pathlib import Path
 
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
 DJBSORT = ROOT / "djbsort"
 WINDOWS = sys.platform == "win32"
+X86_64 = platform.machine().lower() in {"amd64", "x86_64"}
 COMPILE_ARGS = ["-O3", "-pthread"]
 if WINDOWS:
     COMPILE_ARGS += ["-std=c++17", "-DHWY_DISABLE_FUTEX"]
@@ -62,6 +64,7 @@ class BuildExt(build_ext):
     """Keep C-only djbsort sources out of the C++ standard flag."""
 
     def build_extensions(self):
+        """Build C++ and C sources with language-appropriate flags."""
         compile_source = self.compiler._compile
 
         def compile_without_cpp_standard(
@@ -73,6 +76,8 @@ class BuildExt(build_ext):
                     for arg in extra_postargs
                     if not arg.startswith(("-std=c++", "-std=gnu++"))
                 ]
+                if X86_64 and src.endswith("_avx2.c"):
+                    extra_postargs.append("-mavx2")
             return compile_source(
                 obj, src, ext, cc_args, extra_postargs, pp_opts
             )
