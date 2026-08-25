@@ -44,15 +44,6 @@ GRAPH_TYPE = "er"
 
 
 def main():
-    # Warmup run to avoid including compilation time in the timing results
-    warmup_data, _ = gen_laplace(
-        FIXED_N,
-        FIXED_D,
-        EDGES_PER_NODE,
-        graph_type=GRAPH_TYPE,
-    )
-    ExhaustiveOTLiNGAM().fit(warmup_data)
-
     results = []
     for sweep, grid, fixed_n, fixed_d in (
         ("n", N_RANGE, None, FIXED_D),
