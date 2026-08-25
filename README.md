@@ -34,6 +34,11 @@ Scikit-learn-compatible causal discovery for linear non-Gaussian systems.</p>
 - **LiNGAM integration**: Exposes causal orders and weighted adjacency matrices through the established LiNGAM estimator API.
 - **scikit-learn integration**: Native ``BaseEstimator`` integration with familiar ``fit``, ``get_params``, ``set_params``, and ``clone`` support.
 
+The exhaustive estimator uses [djbsort](https://salsa.debian.org/debian/djbsort)
+for double-precision residual sorting and [Google Highway](https://github.com/google/highway)
+for SIMD kernels. Both projects are tracked as Git submodules; the sorter
+selects a portable fallback or the CPU's AVX2/NEON implementation at runtime.
+
 ---
 
 ## ⚡ Method

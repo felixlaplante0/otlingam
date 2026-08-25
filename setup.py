@@ -1,4 +1,4 @@
-"""Build the Highway exhaustive core."""
+"""Build the Highway and djbsort exhaustive core."""
 
 import sys
 from pathlib import Path
@@ -9,6 +9,7 @@ from setuptools import setup
 
 ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
+DJBSORT = ROOT / "djbsort"
 WINDOWS = sys.platform == "win32"
 COMPILE_ARGS = ["-O3", "-pthread"]
 if WINDOWS:
@@ -20,6 +21,13 @@ EXTENSION = Pybind11Extension(
         "otlingam/models/_exhaustive_kernel.cc",
         "otlingam/models/_exhaustive_sort.cc",
         "otlingam/models/_exhaustive_score.cc",
+        "otlingam/models/_djbsort_dispatch.cc",
+        "otlingam/models/_djbsort_int64_portable.c",
+        "otlingam/models/_djbsort_float64_portable.c",
+        "otlingam/models/_djbsort_int64_avx2.c",
+        "otlingam/models/_djbsort_float64_avx2.c",
+        "otlingam/models/_djbsort_int64_neon.c",
+        "otlingam/models/_djbsort_float64_neon.c",
         "highway/hwy/abort.cc",
         "highway/hwy/targets.cc",
         "highway/hwy/contrib/sort/vqsort.cc",
@@ -31,7 +39,14 @@ EXTENSION = Pybind11Extension(
         "highway/hwy/profiler.cc",
         "highway/hwy/timer.cc",
     ],
-    include_dirs=[np.get_include(), str(HIGHWAY), str(ROOT / "otlingam/models")],
+    include_dirs=[
+        np.get_include(),
+        str(HIGHWAY),
+        str(DJBSORT / "int64"),
+        str(DJBSORT / "float64"),
+        str(ROOT / "otlingam/models"),
+        str(ROOT / "otlingam/models/_djbsort_compat"),
+    ],
     extra_compile_args=COMPILE_ARGS,
     extra_link_args=["-pthread"],
     cxx_std=0 if WINDOWS else 17,

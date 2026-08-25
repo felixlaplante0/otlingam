@@ -1,3 +1,6 @@
 [submodule "highway"]
 	path = highway
 	url = https://github.com/google/highway.git
+[submodule "djbsort"]
+	path = djbsort
+	url = https://salsa.debian.org/debian/djbsort.git

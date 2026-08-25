@@ -1,12 +1,11 @@
 #include "_exhaustive_sort.h"
 
-#include "hwy/contrib/sort/order.h"
-#include "hwy/contrib/sort/vqsort.h"
+extern "C" void djbsort_float64(double *, long long);
 
 namespace otlingam {
 
 void sort_values(double *values, std::size_t size) {
-  hwy::VQSort(values, size, hwy::SortAscending());
+  djbsort_float64(values, static_cast<long long>(size));
 }
 
 }  // namespace otlingam

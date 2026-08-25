@@ -1,16 +1,18 @@
-Highway
-=======
+Highway + djbsort
+=================
 
-OTLiNGAM uses `Google Highway <https://github.com/google/highway>`__ for the
-sorting kernel in the exhaustive estimator.
+OTLiNGAM uses `Google Highway <https://github.com/google/highway>`__ and
+`djbsort <https://salsa.debian.org/debian/djbsort>`__ in the exhaustive
+estimator. Highway supplies the SIMD kernels; djbsort sorts the residual
+arrays.
 
 Vectorized sorting
 ------------------
 
 The exhaustive estimator evaluates many residual arrays and sorts each one
-before comparing it with Gaussian quantiles. Highway's ``vqsort`` dispatches a
-portable SIMD implementation for the available CPU, with a scalar fallback
-when needed.
+before comparing it with Gaussian quantiles. djbsort uses a portable fallback
+and Highway-compatible runtime feature detection to select AVX2 on supported
+x86 CPUs or NEON on AArch64.
 
 Where the speedup matters
 -------------------------
@@ -25,6 +27,6 @@ The exhaustive estimator also uses OpenMP to evaluate independent candidate
 masks in parallel. Its exponential state space still limits it to smaller
 systems. Use ``GreedyOTLiNGAM`` when dimension is the main constraint.
 
-Highway is a separate open-source project. See its
-`repository <https://github.com/google/highway>`__ for implementation details
-and supported targets.
+Highway and djbsort are separate open-source projects. See the
+`Highway repository <https://github.com/google/highway>`__ and the
+`djbsort repository <https://salsa.debian.org/debian/djbsort>`__ for details.
