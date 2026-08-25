@@ -48,7 +48,7 @@ Highlights
       Inspect causal orders, weighted adjacency matrices, scores, and intercepts with familiar NumPy tools.
 
 Why OT-LiNGAM?
--------------
+--------------
 
 In a linear structural equation model, a correct causal order makes each variable's regression residual recover one independent structural noise. Non-Gaussianity makes those residuals distinguishable from residuals formed by mixing several noises. OT-LiNGAM turns that idea into an empirical objective based on sorted residuals and Gaussian quantiles.
 
