@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
+from setuptools.command.build_ext import build_ext
 
 ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
@@ -57,7 +58,34 @@ if WINDOWS:
     ]
 
 
+class BuildExt(build_ext):
+    """Keep C-only djbsort sources out of the C++ standard flag."""
+
+    def build_extensions(self):
+        compile_source = self.compiler._compile
+
+        def compile_without_cpp_standard(
+            obj, src, ext, cc_args, extra_postargs, pp_opts
+        ):
+            if src.endswith(".c"):
+                extra_postargs = [
+                    arg
+                    for arg in extra_postargs
+                    if not arg.startswith(("-std=c++", "-std=gnu++"))
+                ]
+            return compile_source(
+                obj, src, ext, cc_args, extra_postargs, pp_opts
+            )
+
+        self.compiler._compile = compile_without_cpp_standard
+        try:
+            super().build_extensions()
+        finally:
+            self.compiler._compile = compile_source
+
+
 setup(
     options={"build_ext": {"compiler": "mingw32"}} if WINDOWS else {},
+    cmdclass={"build_ext": BuildExt},
     ext_modules=[EXTENSION],
 )
