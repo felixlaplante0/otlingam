@@ -1,17 +1,20 @@
 """Build the Highway and djbsort exhaustive core."""
 
 import os
+import platform
 import sys
 from pathlib import Path
 
 import numpy as np
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
+from setuptools.command.build_ext import build_ext
 
 ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
 DJBSORT = ROOT / "djbsort"
 WINDOWS = sys.platform == "win32"
+X86_64 = platform.machine().lower() in {"amd64", "x86_64"}
 COMPILE_ARGS = ["-O3", "-pthread"]
 LINK_ARGS = ["-pthread"]
 CXX_STD = 0
@@ -64,7 +67,24 @@ if WINDOWS:
     ]
 
 
+class _BuildExt(build_ext):
+    def build_extensions(self):
+        compile_source = self.compiler._compile
+
+        def compile_with_avx2(obj, src, ext, cc_args, extra_postargs, pp_opts):
+            if X86_64 and src.endswith("_avx2.c"):
+                extra_postargs = [*extra_postargs, "-mavx2"]
+            return compile_source(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+        self.compiler._compile = compile_with_avx2
+        try:
+            super().build_extensions()
+        finally:
+            self.compiler._compile = compile_source
+
+
 setup(
     options={"build_ext": {"compiler": "mingw32"}} if WINDOWS else {},
+    cmdclass={"build_ext": _BuildExt},
     ext_modules=[EXTENSION],
 )
