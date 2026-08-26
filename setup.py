@@ -71,12 +71,12 @@ class _BuildExt(build_ext):
     def build_extensions(self):
         compile_source = self.compiler._compile
 
-        def compile_with_avx2(obj, src, ext, cc_args, extra_postargs, pp_opts):
+        def _compile_with_avx2(obj, src, ext, cc_args, extra_postargs, pp_opts):
             if X86_64 and src.endswith("_avx2.c"):
                 extra_postargs = [*extra_postargs, "-mavx2"]
             return compile_source(obj, src, ext, cc_args, extra_postargs, pp_opts)
 
-        self.compiler._compile = compile_with_avx2
+        self.compiler._compile = _compile_with_avx2
         try:
             super().build_extensions()
         finally:
