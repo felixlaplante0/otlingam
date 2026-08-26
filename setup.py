@@ -1,22 +1,26 @@
 """Build the Highway and djbsort exhaustive core."""
 
-import platform
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
-from setuptools.command.build_ext import build_ext
 
 ROOT = Path(__file__).resolve().parent
 HIGHWAY = ROOT / "highway"
 DJBSORT = ROOT / "djbsort"
 WINDOWS = sys.platform == "win32"
-X86_64 = platform.machine().lower() in {"amd64", "x86_64"}
 COMPILE_ARGS = ["-O3", "-pthread"]
+LINK_ARGS = ["-pthread"]
+CXX_STD = 0
 if WINDOWS:
-    COMPILE_ARGS += ["-std=c++17", "-DHWY_DISABLE_FUTEX"]
+    COMPILE_ARGS.append("-DHWY_DISABLE_FUTEX")
+
+cxxflags = os.environ.get("CXXFLAGS", "")
+if not {"-std=c++17", "-std=gnu++17"}.intersection(cxxflags.split()):
+    os.environ["CXXFLAGS"] = f"{cxxflags} -std=c++17".strip()
 
 EXTENSION = Pybind11Extension(
     "otlingam.models._exhaustive_kernel",
@@ -51,8 +55,8 @@ EXTENSION = Pybind11Extension(
         str(ROOT / "otlingam/models/_djbsort_compat"),
     ],
     extra_compile_args=COMPILE_ARGS,
-    extra_link_args=["-pthread"],
-    cxx_std=0 if WINDOWS else 17,
+    extra_link_args=LINK_ARGS,
+    cxx_std=CXX_STD,
 )
 if WINDOWS:
     EXTENSION.extra_compile_args = [
@@ -60,37 +64,7 @@ if WINDOWS:
     ]
 
 
-class BuildExt(build_ext):
-    """Keep C-only djbsort sources out of the C++ standard flag."""
-
-    def build_extensions(self):
-        """Build C++ and C sources with language-appropriate flags."""
-        compile_source = self.compiler._compile
-
-        def compile_without_cpp_standard(
-            obj, src, ext, cc_args, extra_postargs, pp_opts
-        ):
-            if src.endswith(".c"):
-                extra_postargs = [
-                    arg
-                    for arg in extra_postargs
-                    if not arg.startswith(("-std=c++", "-std=gnu++"))
-                ]
-                if X86_64 and src.endswith("_avx2.c"):
-                    extra_postargs.append("-mavx2")
-            return compile_source(
-                obj, src, ext, cc_args, extra_postargs, pp_opts
-            )
-
-        self.compiler._compile = compile_without_cpp_standard
-        try:
-            super().build_extensions()
-        finally:
-            self.compiler._compile = compile_source
-
-
 setup(
     options={"build_ext": {"compiler": "mingw32"}} if WINDOWS else {},
-    cmdclass={"build_ext": BuildExt},
     ext_modules=[EXTENSION],
 )

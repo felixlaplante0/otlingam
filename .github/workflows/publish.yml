@@ -25,9 +25,9 @@ jobs:
             runner: windows-latest
             msystem: UCRT64
             toolchain_bin: ucrt64
-            toolchain: mingw-w64-ucrt-x86_64-toolchain
-            cc: gcc
-            cxx: g++
+            toolchain: mingw-w64-ucrt-x86_64-clang
+            cc: clang
+            cxx: clang++
           - name: Windows ARM64
             runner: windows-11-arm
             msystem: CLANGARM64
