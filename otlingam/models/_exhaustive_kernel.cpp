@@ -266,6 +266,6 @@ py::tuple sink_dp(
 
 }  // namespace otlingam
 
-PYBIND11_MODULE(_exhaustive_kernel, module) {
+PYBIND11_MODULE(_exhaustive_kernel, module, py::mod_gil_not_used()) {
     module.def("_sink_dp", &otlingam::sink_dp);
 }
