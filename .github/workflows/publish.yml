@@ -56,7 +56,8 @@ jobs:
         uses: pypa/cibuildwheel@v4.1.1
         env:
           CIBW_BUILD: "cp3*-*"
-          CIBW_SKIP: "*-musllinux_*"
+          # Free-threaded Windows ARM64 needs MSVC-only intrinsics the MinGW toolchain lacks
+          CIBW_SKIP: "*-musllinux_* cp314t-win_arm64"
           CIBW_ARCHS: native
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_SOURCES: tests
