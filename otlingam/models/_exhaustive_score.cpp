@@ -1,5 +1,5 @@
 #undef HWY_TARGET_INCLUDE
-#define HWY_TARGET_INCLUDE "_exhaustive_score.cc"
+#define HWY_TARGET_INCLUDE "_exhaustive_score.cpp"
 #include "hwy/foreach_target.h"
 #include "hwy/highway.h"
 

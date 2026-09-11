@@ -28,10 +28,10 @@ if not {"-std=c++17", "-std=gnu++17"}.intersection(cxxflags.split()):
 EXTENSION = Pybind11Extension(
     "otlingam.models._exhaustive_kernel",
     [
-        "otlingam/models/_exhaustive_kernel.cc",
-        "otlingam/models/_exhaustive_sort.cc",
-        "otlingam/models/_exhaustive_score.cc",
-        "otlingam/models/_djbsort_dispatch.cc",
+        "otlingam/models/_exhaustive_kernel.cpp",
+        "otlingam/models/_exhaustive_sort.cpp",
+        "otlingam/models/_exhaustive_score.cpp",
+        "otlingam/models/_djbsort_dispatch.cpp",
         "otlingam/models/_djbsort_int64_portable.c",
         "otlingam/models/_djbsort_float64_portable.c",
         "otlingam/models/_djbsort_int64_avx2.c",
