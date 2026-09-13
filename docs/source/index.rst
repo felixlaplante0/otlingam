@@ -61,7 +61,7 @@ Learn
    :gutter: 3
 
    .. grid-item-card:: Quick start
-      :link: quickstart
+      :link: quickstart.html
       :class-card: feature-card
 
       Install the package, fit an estimator, and understand the mathematical objective.
@@ -71,9 +71,6 @@ Learn
       :class-card: feature-card
 
       Follow a complete synthetic example with plots and a comparison of the estimators.
-
-API reference
--------------
 
 .. toctree::
    :maxdepth: 2
