@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: publish
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
             cxx: clang++
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Set up MinGW toolchain
@@ -65,7 +65,7 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: >-
             CC=${{ matrix.cc }} CXX=${{ matrix.cxx }}
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.name }}
           path: wheelhouse/*.whl
@@ -75,13 +75,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
           path: dist
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9
         with:
-          packages-dir: dist
-          password: ${{ secrets.PYPI_TOKEN }}
+          enable-cache: false
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish
