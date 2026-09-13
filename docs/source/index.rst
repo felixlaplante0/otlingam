@@ -67,14 +67,10 @@ Learn
       Install the package, fit an estimator, and understand the mathematical objective.
 
    .. grid-item-card:: Tutorial notebook
-      :link: tutorial
+      :link: tutorial.html
       :class-card: feature-card
 
       Follow a complete synthetic example with plots and a comparison of the estimators.
-
-.. raw:: html
-
-   <p><a class="tutorial-link" href="https://github.com/felixlaplante0/otlingam/blob/main/examples/tutorial.ipynb">Open the tutorial notebook source on GitHub</a></p>
 
 API reference
 -------------
