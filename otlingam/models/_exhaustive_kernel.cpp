@@ -7,18 +7,86 @@
 #include <limits>
 #include <vector>
 
+#undef HWY_TARGET_INCLUDE
+#define HWY_TARGET_INCLUDE "_exhaustive_kernel.cpp"
+#include "hwy/foreach_target.h"
+#include "hwy/highway.h"
 #include "hwy/aligned_allocator.h"
 #include "hwy/contrib/thread_pool/thread_pool.h"
+#include "hwy/targets.h"
+
+HWY_BEFORE_NAMESPACE();
+namespace otlingam {
+namespace HWY_NAMESPACE {
+
+double sum_squared_differences_impl(
+    const double *values,
+    const double *quantiles,
+    int size) {
+  const hwy::HWY_NAMESPACE::ScalableTag<double> d;
+  auto sum = hwy::HWY_NAMESPACE::Zero(d);
+  int i = 0;
+  const int lanes = static_cast<int>(hwy::HWY_NAMESPACE::Lanes(d));
+  for (; i + lanes <= size; i += lanes) {
+    const auto delta = hwy::HWY_NAMESPACE::Sub(
+        hwy::HWY_NAMESPACE::LoadU(d, values + i),
+        hwy::HWY_NAMESPACE::LoadU(d, quantiles + i));
+    sum = hwy::HWY_NAMESPACE::Add(sum, hwy::HWY_NAMESPACE::Mul(delta, delta));
+  }
+  double result = hwy::HWY_NAMESPACE::ReduceSum(d, sum);
+  for (; i < size; ++i) {
+    const double delta = values[i] - quantiles[i];
+    result += delta * delta;
+  }
+  return result;
+}
+
+}  // namespace HWY_NAMESPACE
+}  // namespace otlingam
+HWY_AFTER_NAMESPACE();
+
+#if HWY_ONCE
+#if (defined(__x86_64__) || defined(_M_X64)) && \
+    (defined(__GNUC__) || defined(__clang__))
+#define OTLINGAM_DJBSORT_AVX2
+#endif
+
+extern "C" void djbsort_float64_portable(double *, long long);
+#if defined(OTLINGAM_DJBSORT_AVX2)
+extern "C" void djbsort_float64_avx2(double *, long long);
+#elif defined(__aarch64__)
+extern "C" void djbsort_float64_neon(double *, long long);
+#endif
 
 namespace py = pybind11;
 
 namespace otlingam {
 
-void sort_values(double *values, size_t size) noexcept;
+HWY_EXPORT(sum_squared_differences_impl);
+
 double sum_squared_differences(
     const double *values,
     const double *quantiles,
-    int size);
+    int size) {
+    return HWY_DYNAMIC_DISPATCH(sum_squared_differences_impl)(
+        values, quantiles, size);
+}
+
+void sort_values(double *values, size_t size) noexcept {
+    const auto n = static_cast<long long>(size);
+#if defined(OTLINGAM_DJBSORT_AVX2)
+    if ((hwy::SupportedTargets() & HWY_AVX2) != 0) {
+        djbsort_float64_avx2(values, n);
+        return;
+    }
+#elif defined(__aarch64__)
+    if ((hwy::SupportedTargets() & HWY_ALL_NEON) != 0) {
+        djbsort_float64_neon(values, n);
+        return;
+    }
+#endif
+    djbsort_float64_portable(values, n);
+}
 
 int popcount(int mask) noexcept {
     int result = 0;
@@ -269,3 +337,4 @@ py::tuple sink_dp(
 PYBIND11_MODULE(_exhaustive_kernel, module, py::mod_gil_not_used()) {
     module.def("_sink_dp", &otlingam::sink_dp);
 }
+#endif  // HWY_ONCE
