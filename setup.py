@@ -10,6 +10,8 @@ WINDOWS = sys.platform == "win32"
 MACHINE = platform.machine().lower()
 COMPILE_ARGS = ["-O3", "-pthread"]
 LINK_ARGS = ["-pthread"]
+if WINDOWS:
+    COMPILE_ARGS.append("-DHWY_DISABLE_FUTEX")
 
 
 def djbsort_library(target, int64_impl, float64_impl, cflags=()):
