@@ -1,34 +1,48 @@
 """Build the Highway and djbsort exhaustive core."""
 
-import os
 import platform
 import sys
 
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
-from setuptools.command.build_ext import build_ext
 
 WINDOWS = sys.platform == "win32"
-X86_64 = platform.machine().lower() in {"amd64", "x86_64"}
+MACHINE = platform.machine().lower()
 COMPILE_ARGS = ["-O3", "-pthread"]
 LINK_ARGS = ["-pthread"]
-if WINDOWS:
-    COMPILE_ARGS.append("-DHWY_DISABLE_FUTEX")
 
-cxxflags = os.environ.get("CXXFLAGS", "")
-if not {"-std=c++17", "-std=gnu++17"}.intersection(cxxflags.split()):
-    os.environ["CXXFLAGS"] = f"{cxxflags} -std=c++17".strip()
+
+def djbsort_library(target, int64_impl, float64_impl, cflags=()):
+    """Build one djbsort target with its symbols suffixed by the target name."""
+    int64_sort = f"djbsort_int64_{target}"
+    return (
+        f"djbsort_{target}",
+        {
+            "sources": [
+                f"djbsort/int64/{int64_impl}/sort.c",
+                f"djbsort/float64/{float64_impl}/sort.c",
+            ],
+            "macros": [
+                ("int64_sort", int64_sort),
+                ("djbsort_int64", int64_sort),
+                ("float64_sort", f"djbsort_float64_{target}"),
+            ],
+            "include_dirs": ["djbsort/cryptoint", "otlingam/models/_djbsort_compat"],
+            "cflags": ["-O3", *cflags],
+        },
+    )
+
+
+LIBRARIES = [djbsort_library("portable", "portable4", "useint64")]
+if MACHINE in {"amd64", "x86_64"}:
+    LIBRARIES.append(djbsort_library("avx2", "avx2", "avx2useint64", ["-mavx2"]))
+elif MACHINE in {"aarch64", "arm64"}:
+    LIBRARIES.append(djbsort_library("neon", "neon", "useint64"))
 
 EXTENSION = Pybind11Extension(
     "otlingam.models._exhaustive_kernel",
     [
         "otlingam/models/_exhaustive_kernel.cpp",
-        "otlingam/models/_djbsort_int64_portable.c",
-        "otlingam/models/_djbsort_float64_portable.c",
-        "otlingam/models/_djbsort_int64_avx2.c",
-        "otlingam/models/_djbsort_float64_avx2.c",
-        "otlingam/models/_djbsort_int64_neon.c",
-        "otlingam/models/_djbsort_float64_neon.c",
         "highway/hwy/abort.cc",
         "highway/hwy/targets.cc",
         "highway/hwy/contrib/sort/vqsort.cc",
@@ -40,40 +54,20 @@ EXTENSION = Pybind11Extension(
         "highway/hwy/profiler.cc",
         "highway/hwy/timer.cc",
     ],
-    include_dirs=[
-        "highway",
-        "djbsort/int64",
-        "djbsort/float64",
-        "otlingam/models",
-        "otlingam/models/_djbsort_compat",
-    ],
+    include_dirs=["highway", "otlingam/models"],
     extra_compile_args=COMPILE_ARGS,
     extra_link_args=LINK_ARGS,
+    cxx_std=17,
 )
 if WINDOWS:
     EXTENSION.extra_compile_args = [
         arg for arg in EXTENSION.extra_compile_args if not arg.startswith("/")
     ]
 
-
-class _BuildExt(build_ext):
-    def build_extensions(self):
-        compile_source = self.compiler._compile
-
-        def _compile_with_avx2(obj, src, ext, cc_args, extra_postargs, pp_opts):
-            if X86_64 and src.endswith("_avx2.c"):
-                extra_postargs = [*extra_postargs, "-mavx2"]
-            return compile_source(obj, src, ext, cc_args, extra_postargs, pp_opts)
-
-        self.compiler._compile = _compile_with_avx2
-        try:
-            super().build_extensions()
-        finally:
-            self.compiler._compile = compile_source
-
-
 setup(
-    options={"build_ext": {"compiler": "mingw32"}} if WINDOWS else {},
-    cmdclass={"build_ext": _BuildExt},
+    options={"build_clib": {"compiler": "mingw32"}, "build_ext": {"compiler": "mingw32"}}
+    if WINDOWS
+    else {},
+    libraries=LIBRARIES,
     ext_modules=[EXTENSION],
 )
