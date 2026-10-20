@@ -2,9 +2,9 @@ from numbers import Integral
 from typing import ClassVar, Self, cast
 
 import numpy as np
+from joblib import effective_n_jobs
 from sklearn.utils._param_validation import (  # type: ignore
     Interval,
-    Options,
     validate_params,
 )
 from sklearn.utils.validation import validate_data  # type: ignore
@@ -47,8 +47,9 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
           enables estimation of an intercept for each variable.
 
     Optimization settings:
-        - ``n_jobs``: Number of threads used by the dynamic-programming search. ``None``
-          uses one thread and ``-1`` uses all available threads.
+        - ``n_jobs``: Number of threads used by the dynamic-programming search, with
+          the joblib convention: ``None`` uses one thread and ``-1`` all available
+          threads.
 
     Attributes:
         fit_intercept (bool): Whether to center the data before fitting.
@@ -73,7 +74,7 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
     _parameter_constraints: ClassVar[dict] = {
         "fit_intercept": ["boolean"],
         "n_jobs": [
-            Options(Integral, {-1}),
+            Interval(Integral, None, -1, closed="right"),
             Interval(Integral, 1, None, closed="left"),
             None,
         ],
@@ -86,8 +87,8 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
             fit_intercept (bool, optional): Whether to center the data. Defaults to
                 True.
             n_jobs (int | None, optional): Number of threads used by the
-                dynamic-programming search. ``None`` uses one thread and ``-1`` uses
-                all available threads. Defaults to -1.
+                dynamic-programming search, with the joblib convention: ``None`` uses
+                one thread and ``-1`` all available threads. Defaults to -1.
         """
         super().__init__()
         self.fit_intercept = fit_intercept
@@ -125,7 +126,7 @@ class ExhaustiveOTLiNGAM(BaseLiNGAM):
 
         cov_matrix = cast(np.ndarray, X.T @ X)  # type: ignore
         quantiles = gauss_quantiles(n)  # type: ignore
-        n_jobs = 1 if self.n_jobs is None else 0 if self.n_jobs == -1 else self.n_jobs
+        n_jobs = effective_n_jobs(self.n_jobs)
         sinks, self.score_ = _sink_dp(X, cov_matrix, quantiles, d, n_jobs)
         self.causal_order_ = list(_causal_order(sinks, d))
         self._estimate_adjacency_matrix(X)

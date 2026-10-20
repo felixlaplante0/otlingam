@@ -35,13 +35,13 @@ def test_variable_limit():
 
 
 def test_n_jobs():
-    """Matches serial and automatic threading and rejects zero threads."""
+    """Matches serial and joblib-style threading and rejects zero threads."""
     X, _ = linear_dag()
     serial = ExhaustiveOTLiNGAM(n_jobs=1).fit(X)
-    automatic = ExhaustiveOTLiNGAM(n_jobs=-1).fit(X)
-
-    assert automatic.score_ == pytest.approx(serial.score_)
-    assert automatic.causal_order_ == serial.causal_order_
+    for n_jobs in [-1, -2, None]:
+        automatic = ExhaustiveOTLiNGAM(n_jobs=n_jobs).fit(X)
+        assert automatic.score_ == pytest.approx(serial.score_)
+        assert automatic.causal_order_ == serial.causal_order_
     with pytest.raises(InvalidParameterError):
         ExhaustiveOTLiNGAM(n_jobs=0).fit(X)
     with pytest.raises(TypeError):

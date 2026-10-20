@@ -1194,6 +1194,7 @@ wheels = [
 name = "otlingam"
 source = { editable = "." }
 dependencies = [
+    { name = "joblib" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "otica" },
@@ -1215,6 +1216,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "joblib" },
     { name = "myst-nb", marker = "extra == 'docs'" },
     { name = "numpy" },
     { name = "otica" },
