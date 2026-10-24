@@ -2,6 +2,7 @@
 
 import platform
 import sys
+from pathlib import Path
 
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
@@ -41,21 +42,28 @@ if MACHINE in {"amd64", "x86_64"}:
 elif MACHINE in {"aarch64", "arm64"}:
     LIBRARIES.append(djbsort_library("neon", "neon", "useint64"))
 
+HIGHWAY_SOURCES = [
+    "highway/hwy/abort.cc",
+    "highway/hwy/targets.cc",
+    "highway/hwy/contrib/sort/vqsort.cc",
+    "highway/hwy/contrib/sort/vqsort_f64a.cc",
+    "highway/hwy/aligned_allocator.cc",
+    "highway/hwy/per_target.cc",
+    "highway/hwy/contrib/thread_pool/thread_pool.cc",
+    "highway/hwy/contrib/thread_pool/topology.cc",
+    "highway/hwy/profiler.cc",
+    "highway/hwy/timer.cc",
+]
+# Highway after 1.4.0 splits these out of the sources above.
+HIGHWAY_SOURCES += [
+    path
+    for path in ("highway/hwy/contrib/sort/vqsort_have.cc", "highway/hwy/os_rng.cc")
+    if Path(path).exists()
+]
+
 EXTENSION = Pybind11Extension(
     "otlingam.models._exhaustive_kernel",
-    [
-        "otlingam/models/_exhaustive_kernel.cpp",
-        "highway/hwy/abort.cc",
-        "highway/hwy/targets.cc",
-        "highway/hwy/contrib/sort/vqsort.cc",
-        "highway/hwy/contrib/sort/vqsort_f64a.cc",
-        "highway/hwy/contrib/sort/vqsort_have.cc",
-        "highway/hwy/aligned_allocator.cc",
-        "highway/hwy/contrib/thread_pool/thread_pool.cc",
-        "highway/hwy/contrib/thread_pool/topology.cc",
-        "highway/hwy/profiler.cc",
-        "highway/hwy/timer.cc",
-    ],
+    ["otlingam/models/_exhaustive_kernel.cpp", *HIGHWAY_SOURCES],
     include_dirs=["highway", "otlingam/models"],
     extra_compile_args=COMPILE_ARGS,
     extra_link_args=LINK_ARGS,
