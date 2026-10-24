@@ -16,6 +16,13 @@ jobs:
         uses: actions/checkout@v7
         with:
           submodules: recursive
+      - name: Check out the latest Highway and djbsort releases
+        shell: bash
+        run: |
+          git -C highway fetch --tags --quiet
+          git -C highway checkout --quiet "$(git -C highway tag --list '[0-9]*' --sort=-v:refname | head -n 1)"
+          git -C djbsort fetch --tags --quiet
+          git -C djbsort checkout --quiet "$(git -C djbsort tag --list 'upstream/*' --sort=-v:refname | head -n 1)"
       - name: Install uv
         uses: astral-sh/setup-uv@v9.0.0
         with:

@@ -4,6 +4,12 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.13"
+  jobs:
+    post_checkout:
+      - git -C highway fetch --tags --quiet
+      - git -C highway checkout --quiet "$(git -C highway tag --list '[0-9]*' --sort=-v:refname | head -n 1)"
+      - git -C djbsort fetch --tags --quiet
+      - git -C djbsort checkout --quiet "$(git -C djbsort tag --list 'upstream/*' --sort=-v:refname | head -n 1)"
 
 submodules:
   include: all
